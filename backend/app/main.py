@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import summoner
+from app.api.v1 import analysis, match, summoner
 from app.config import get_settings
 
 settings = get_settings()
@@ -37,6 +37,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(summoner.router, prefix="/api/v1/summoner", tags=["summoner"])
+app.include_router(match.router, prefix="/api/v1/match", tags=["match"])
+app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
 
 
 @app.get("/health")
