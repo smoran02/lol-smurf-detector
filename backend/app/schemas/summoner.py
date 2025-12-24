@@ -19,11 +19,12 @@ class RiotAccount(BaseModel):
 class SummonerData(BaseModel):
     """Response from Summoner API."""
 
-    id: str
-    account_id: str = Field(alias="accountId")
     puuid: str
     profile_icon_id: int = Field(alias="profileIconId")
     summoner_level: int = Field(alias="summonerLevel")
+    # These fields are deprecated and no longer returned by Riot API
+    id: str | None = None
+    account_id: str | None = Field(default=None, alias="accountId")
 
     class Config:
         populate_by_name = True
@@ -47,7 +48,7 @@ class SummonerResponse(BaseModel):
     """Full summoner response to client."""
 
     puuid: str
-    summoner_id: str
+    summoner_id: str | None
     riot_id_name: str
     riot_id_tag: str
     summoner_level: int

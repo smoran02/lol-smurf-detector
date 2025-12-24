@@ -45,6 +45,7 @@ class SmurfAnalysisResponse(BaseModel):
     riot_id_name: str
     riot_id_tag: str
     summoner_level: int
+    champion_id: int | None = None  # Champion being played in live game
 
     # Overall result
     total_score: float = Field(ge=0, le=100)

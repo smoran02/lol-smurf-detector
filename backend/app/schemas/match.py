@@ -6,8 +6,10 @@ from pydantic import BaseModel, Field
 class LiveGameParticipant(BaseModel):
     """Participant in a live game."""
 
-    puuid: str
-    summoner_id: str = Field(alias="summonerId")
+    # puuid can be None for bots or players with privacy settings
+    puuid: str | None = None
+    # summonerId is deprecated and no longer returned by Riot API
+    summoner_id: str | None = Field(default=None, alias="summonerId")
     riot_id_name: str = Field(alias="riotId", default="")
     summoner_name: str = Field(alias="summonerName", default="")
     champion_id: int = Field(alias="championId")

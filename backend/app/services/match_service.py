@@ -28,11 +28,15 @@ class MatchService:
         Returns:
             List of full match data
         """
-        match_ids = await riot_api.get_match_ids(
-            puuid=puuid,
-            count=count,
-            queue=queue_id,
-        )
+        try:
+            match_ids = await riot_api.get_match_ids(
+                puuid=puuid,
+                count=count,
+                queue=queue_id,
+            )
+        except Exception as e:
+            logger.warning(f"Failed to fetch match IDs for {puuid}: {e}")
+            return []
 
         matches = []
         for match_id in match_ids:

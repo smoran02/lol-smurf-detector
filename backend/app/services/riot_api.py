@@ -1,5 +1,6 @@
 """Riot API client with rate limiting and error handling."""
 
+import asyncio
 import logging
 
 import httpx
@@ -42,43 +43,56 @@ class RiotAPIClient:
         self,
         method: str,
         url: str,
+        retries: int = 3,
         **kwargs,
     ) -> dict:
-        """Make a rate-limited request to Riot API.
+        """Make a rate-limited request to Riot API with retry logic.
 
         Args:
             method: HTTP method
             url: Full URL to request
+            retries: Number of retries for rate limit errors
             **kwargs: Additional arguments to pass to httpx
 
         Returns:
             JSON response as dict
 
         Raises:
-            RateLimitExceeded: If rate limit is hit
+            RateLimitExceeded: If rate limit is hit after all retries
             RiotAPIError: For other API errors
             SummonerNotFound: If summoner not found (404)
         """
-        # Wait for rate limit token
-        wait_time = await rate_limiter.acquire()
-        if wait_time > 0:
-            logger.debug(f"Rate limited, waited {wait_time:.2f}s")
+        for attempt in range(retries + 1):
+            # Wait for rate limit token
+            wait_time = await rate_limiter.acquire()
+            if wait_time > 0:
+                logger.debug(f"Rate limited, waited {wait_time:.2f}s")
 
-        client = await self._get_client()
-        response = await client.request(method, url, **kwargs)
+            client = await self._get_client()
+            response = await client.request(method, url, **kwargs)
 
-        if response.status_code == 200:
-            return response.json()
-        elif response.status_code == 404:
-            raise SummonerNotFound(url.split("/")[-1])
-        elif response.status_code == 429:
-            retry_after = int(response.headers.get("Retry-After", 60))
-            logger.warning(f"Rate limit exceeded, retry after {retry_after}s")
-            raise RateLimitExceeded(retry_after)
-        else:
-            error_msg = response.text[:200]
-            logger.error(f"Riot API error {response.status_code}: {error_msg}")
-            raise RiotAPIError(response.status_code, error_msg)
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 404:
+                raise SummonerNotFound(url.split("/")[-1])
+            elif response.status_code == 429:
+                retry_after = int(response.headers.get("Retry-After", 10))
+                # Set global backoff so ALL requests wait
+                rate_limiter.set_backoff(retry_after)
+                if attempt < retries:
+                    logger.warning(f"Rate limit hit, global backoff for {retry_after}s, retry {attempt + 1}/{retries}")
+                    await asyncio.sleep(retry_after)
+                    continue
+                else:
+                    logger.error(f"Rate limit exceeded after {retries} retries")
+                    raise RateLimitExceeded(retry_after)
+            else:
+                error_msg = response.text[:200]
+                logger.error(f"Riot API error {response.status_code}: {error_msg}")
+                raise RiotAPIError(response.status_code, error_msg)
+
+        # Should not reach here, but just in case
+        raise RiotAPIError(500, "Request failed after retries")
 
     # Account endpoints (Regional)
     async def get_account_by_riot_id(

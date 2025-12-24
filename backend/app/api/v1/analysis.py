@@ -22,12 +22,44 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Queue ID to display name mapping
+QUEUE_NAMES = {
+    420: "Ranked Solo/Duo",
+    440: "Ranked Flex",
+    400: "Normal Draft",
+    430: "Normal Blind",
+    450: "ARAM",
+    700: "Clash",
+    830: "Co-op vs AI (Intro)",
+    840: "Co-op vs AI (Beginner)",
+    850: "Co-op vs AI (Intermediate)",
+    900: "ARURF",
+    1020: "One for All",
+    1300: "Nexus Blitz",
+    1400: "Ultimate Spellbook",
+    1700: "Arena",
+    1900: "URF",
+}
 
-async def analyze_player_by_puuid(puuid: str) -> SmurfAnalysisResponse:
+
+def get_queue_name(queue_id: int, game_mode: str) -> str:
+    """Get human-readable queue name from queue ID."""
+    return QUEUE_NAMES.get(queue_id, game_mode)
+
+
+async def analyze_player_by_puuid(
+    puuid: str,
+    riot_id_name: str = "",
+    riot_id_tag: str = "",
+    champion_id: int | None = None,
+) -> SmurfAnalysisResponse:
     """Analyze a single player for smurf indicators.
 
     Args:
         puuid: Player PUUID
+        riot_id_name: Optional Riot ID game name (from live game)
+        riot_id_tag: Optional Riot ID tag (from live game)
+        champion_id: Optional champion ID (from live game)
 
     Returns:
         SmurfAnalysisResponse with analysis results
@@ -38,31 +70,26 @@ async def analyze_player_by_puuid(puuid: str) -> SmurfAnalysisResponse:
     except SummonerNotFound:
         raise HTTPException(status_code=404, detail="Summoner not found")
 
-    # Get Riot ID for display
-    # We need to do a reverse lookup or use cached data
-    # For now, we'll use empty values and update later
-    riot_id_name = ""
-    riot_id_tag = ""
-
-    # Get ranked data
-    ranked_entries = await riot_api.get_ranked_entries(summoner.id)
-
-    # Extract solo queue data
+    # Get ranked data (only if summoner ID is available)
     solo_tier = None
     solo_rank = None
     solo_wins = None
     solo_losses = None
 
-    for entry in ranked_entries:
-        if entry.queue_type == "RANKED_SOLO_5x5":
-            solo_tier = entry.tier
-            solo_rank = entry.rank
-            solo_wins = entry.wins
-            solo_losses = entry.losses
-            break
+    if summoner.id:
+        ranked_entries = await riot_api.get_ranked_entries(summoner.id)
 
-    # Fetch match history
-    matches = await match_service.get_recent_matches(puuid, count=20, queue_id=420)
+        # Extract solo queue data
+        for entry in ranked_entries:
+            if entry.queue_type == "RANKED_SOLO_5x5":
+                solo_tier = entry.tier
+                solo_rank = entry.rank
+                solo_wins = entry.wins
+                solo_losses = entry.losses
+                break
+
+    # Fetch match history (limited to 5 to respect rate limits)
+    matches = await match_service.get_recent_matches(puuid, count=5, queue_id=420)
 
     # Extract and aggregate stats
     player_stats = match_service.extract_player_stats(matches, puuid)
@@ -83,6 +110,7 @@ async def analyze_player_by_puuid(puuid: str) -> SmurfAnalysisResponse:
         riot_id_name=riot_id_name,
         riot_id_tag=riot_id_tag,
         summoner_level=summoner.summoner_level,
+        champion_id=champion_id,
         total_score=result.total_score,
         classification=SmurfClassification(result.classification.value),
         confidence=result.confidence,
@@ -139,11 +167,32 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
             detail="Player is not currently in a game",
         )
 
-    # Separate teams
+    # Build participant info map
+    participant_info = {}
     blue_team_puuids = []
     red_team_puuids = []
 
     for participant in live_game.participants:
+        # Skip participants without a puuid (bots or private profiles)
+        if not participant.puuid:
+            continue
+
+        # Parse Riot ID from the riotId field (format: "Name#Tag")
+        riot_id_name = ""
+        riot_id_tag = ""
+        if participant.riot_id_name and "#" in participant.riot_id_name:
+            parts = participant.riot_id_name.split("#", 1)
+            riot_id_name = parts[0]
+            riot_id_tag = parts[1] if len(parts) > 1 else ""
+        elif participant.summoner_name:
+            riot_id_name = participant.summoner_name
+
+        participant_info[participant.puuid] = {
+            "riot_id_name": riot_id_name,
+            "riot_id_tag": riot_id_tag,
+            "champion_id": participant.champion_id,
+        }
+
         if participant.team_id == 100:
             blue_team_puuids.append(participant.puuid)
         else:
@@ -152,7 +201,13 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
     # Analyze all players concurrently
     async def safe_analyze(p: str) -> SmurfAnalysisResponse | None:
         try:
-            return await analyze_player_by_puuid(p)
+            info = participant_info.get(p, {})
+            return await analyze_player_by_puuid(
+                p,
+                riot_id_name=info.get("riot_id_name", ""),
+                riot_id_tag=info.get("riot_id_tag", ""),
+                champion_id=info.get("champion_id"),
+            )
         except Exception as e:
             logger.warning(f"Failed to analyze player {p}: {e}")
             return None
@@ -175,7 +230,7 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
 
     return MatchAnalysisResponse(
         game_id=live_game.game_id,
-        game_mode=live_game.game_mode,
+        game_mode=get_queue_name(live_game.game_queue_config_id, live_game.game_mode),
         blue_team=blue_results,
         red_team=red_results,
     )

@@ -1,6 +1,6 @@
 "use client";
 
-import { MatchAnalysisResponse } from "@/lib/api";
+import { MatchAnalysisResponse, CHAMPION_NAMES } from "@/lib/api";
 import { PlayerCard } from "../player/PlayerCard";
 
 interface LiveMatchCardProps {
@@ -27,7 +27,11 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
           </div>
           <div className="space-y-3">
             {analysis.blue_team.map((player) => (
-              <PlayerCard key={player.puuid} analysis={player} />
+              <PlayerCard
+                key={player.puuid}
+                analysis={player}
+                championName={player.champion_id ? CHAMPION_NAMES[player.champion_id] || `Champion ${player.champion_id}` : undefined}
+              />
             ))}
             {analysis.blue_team.length === 0 && (
               <p className="text-gray-500 text-center py-4">
@@ -46,7 +50,11 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
           </div>
           <div className="space-y-3">
             {analysis.red_team.map((player) => (
-              <PlayerCard key={player.puuid} analysis={player} />
+              <PlayerCard
+                key={player.puuid}
+                analysis={player}
+                championName={player.champion_id ? CHAMPION_NAMES[player.champion_id] || `Champion ${player.champion_id}` : undefined}
+              />
             ))}
             {analysis.red_team.length === 0 && (
               <p className="text-gray-500 text-center py-4">
