@@ -9,87 +9,77 @@ from app.core.rate_limiter import RateLimiter
 
 
 @pytest.mark.asyncio
-async def test_rate_limiter_initial_tokens():
-    """Test that rate limiter starts with full tokens."""
-    limiter = RateLimiter(per_second=20, per_2min=100)
-    tokens = limiter.get_available_tokens()
+async def test_rate_limiter_first_request_no_wait():
+    """Test that first request has no wait time."""
+    limiter = RateLimiter()
 
-    assert tokens["second"] == 20
-    assert tokens["2min"] == 100
-
-
-@pytest.mark.asyncio
-async def test_rate_limiter_acquire_consumes_token():
-    """Test that acquiring a token reduces available tokens."""
-    limiter = RateLimiter(per_second=20, per_2min=100)
-
-    await limiter.acquire()
-    tokens = limiter.get_available_tokens()
-
-    assert tokens["second"] == 19
-    assert tokens["2min"] == 99
-
-
-@pytest.mark.asyncio
-async def test_rate_limiter_multiple_acquires():
-    """Test multiple token acquisitions."""
-    limiter = RateLimiter(per_second=5, per_2min=10)
-
-    for _ in range(3):
-        await limiter.acquire()
-
-    tokens = limiter.get_available_tokens()
-    assert tokens["second"] == 2
-    assert tokens["2min"] == 7
-
-
-@pytest.mark.asyncio
-async def test_rate_limiter_waits_when_empty():
-    """Test that limiter waits when tokens are exhausted."""
-    # Create a limiter with very few tokens
-    limiter = RateLimiter(per_second=2, per_2min=100)
-
-    # Exhaust the per-second bucket
-    await limiter.acquire()
-    await limiter.acquire()
-
-    # Next acquire should wait
-    start = time.monotonic()
     wait_time = await limiter.acquire()
+
+    # First request should not wait
+    assert wait_time == 0
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_adds_delay_between_requests():
+    """Test that subsequent requests have delays."""
+    limiter = RateLimiter()
+
+    # First request - no wait
+    await limiter.acquire()
+
+    # Immediate second request should wait
+    wait_time = await limiter.acquire()
+
+    # Should have waited approximately min_interval (50ms)
+    assert wait_time > 0
+    assert wait_time <= 0.1  # Should be around 50ms
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_no_wait_after_interval():
+    """Test that no wait needed after interval has passed."""
+    limiter = RateLimiter()
+
+    await limiter.acquire()
+
+    # Wait longer than min_interval
+    await asyncio.sleep(0.1)
+
+    wait_time = await limiter.acquire()
+
+    # Should not need to wait since interval passed
+    assert wait_time == 0
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_concurrent_requests():
+    """Test that concurrent requests are serialized."""
+    limiter = RateLimiter()
+
+    start = time.monotonic()
+
+    # Acquire multiple times concurrently
+    tasks = [limiter.acquire() for _ in range(5)]
+    wait_times = await asyncio.gather(*tasks)
+
     elapsed = time.monotonic() - start
 
-    # Should have waited approximately for token refill
-    assert wait_time > 0
-    assert elapsed > 0.1  # At least some wait time
+    # Total time should be at least 4 * min_interval (first request is instant)
+    # 4 * 0.05 = 0.2 seconds minimum
+    assert elapsed >= 0.15  # Allow some tolerance
+
+    # At least some requests should have waited
+    assert sum(wait_times) > 0
 
 
 @pytest.mark.asyncio
-async def test_rate_limiter_refills_over_time():
-    """Test that tokens refill over time."""
-    limiter = RateLimiter(per_second=10, per_2min=100)
+async def test_rate_limiter_set_backoff():
+    """Test that set_backoff is a no-op but doesn't error."""
+    limiter = RateLimiter()
 
-    # Use some tokens
-    await limiter.acquire()
-    await limiter.acquire()
+    # Should not raise
+    limiter.set_backoff(120)
 
-    # Wait a bit for refill
-    await asyncio.sleep(0.3)
-
-    tokens = limiter.get_available_tokens()
-    # Should have refilled some tokens
-    assert tokens["second"] > 8
-
-
-@pytest.mark.asyncio
-async def test_rate_limiter_concurrent_acquires():
-    """Test that concurrent acquires are handled correctly."""
-    limiter = RateLimiter(per_second=10, per_2min=100)
-
-    # Acquire multiple tokens concurrently
-    tasks = [limiter.acquire() for _ in range(5)]
-    await asyncio.gather(*tasks)
-
-    tokens = limiter.get_available_tokens()
-    # Should have consumed 5 tokens from each bucket
-    assert tokens["second"] <= 5
-    assert tokens["2min"] <= 95
+    # Should still work normally
+    wait_time = await limiter.acquire()
+    assert wait_time == 0

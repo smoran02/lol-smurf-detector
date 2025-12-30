@@ -145,12 +145,15 @@ async def test_get_match_success(httpx_mock, riot_client, mock_match_data):
 
 
 @pytest.mark.asyncio
+@pytest.mark.httpx_mock(can_send_already_matched_responses=True)
 async def test_rate_limit_exceeded(httpx_mock, riot_client):
     """Test handling of rate limit exceeded response."""
+    # Mock 429 response - will be reused for all retries
+    # Use very short retry-after to make test fast
     httpx_mock.add_response(
         url="https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/TestPlayer/NA1",
         status_code=429,
-        headers={"Retry-After": "120"},
+        headers={"Retry-After": "0"},
     )
 
     with pytest.raises(RateLimitExceeded) as exc_info:
