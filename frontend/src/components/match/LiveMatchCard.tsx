@@ -1,17 +1,34 @@
 "use client";
 
-import { MatchAnalysisResponse, CHAMPION_NAMES, POSITION_ORDER, SmurfAnalysisResponse } from "@/lib/api";
+import { MatchAnalysisResponse, CHAMPION_NAMES, POSITION_ORDER, SmurfAnalysisResponse, HiddenPlayer } from "@/lib/api";
 import { PlayerCard } from "../player/PlayerCard";
+import { StreamerModeCard } from "../player/StreamerModeCard";
 
 interface LiveMatchCardProps {
   analysis: MatchAnalysisResponse;
 }
+
+// Union type for display - either an analyzed player or a hidden player
+type DisplayPlayer =
+  | { type: "analyzed"; data: SmurfAnalysisResponse }
+  | { type: "hidden"; data: HiddenPlayer };
 
 // Sort players by position: TOP, JUNGLE, MID, BOT, SUPPORT
 function sortByPosition(players: SmurfAnalysisResponse[]): SmurfAnalysisResponse[] {
   return [...players].sort((a, b) => {
     const orderA = POSITION_ORDER[a.position] ?? 5;
     const orderB = POSITION_ORDER[b.position] ?? 5;
+    return orderA - orderB;
+  });
+}
+
+// Sort display players (both analyzed and hidden) by position
+function sortDisplayPlayers(players: DisplayPlayer[]): DisplayPlayer[] {
+  return [...players].sort((a, b) => {
+    const posA = a.type === "analyzed" ? a.data.position : a.data.position;
+    const posB = b.type === "analyzed" ? b.data.position : b.data.position;
+    const orderA = POSITION_ORDER[posA] ?? 5;
+    const orderB = POSITION_ORDER[posB] ?? 5;
     return orderA - orderB;
   });
 }
@@ -55,6 +72,7 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
         <TeamSection
           team="blue"
           players={analysis.blue_team}
+          hiddenPlayers={analysis.hidden_players?.filter(p => p.team_id === 100) || []}
           label="BLUE TEAM"
         />
 
@@ -62,6 +80,7 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
         <TeamSection
           team="red"
           players={analysis.red_team}
+          hiddenPlayers={analysis.hidden_players?.filter(p => p.team_id === 200) || []}
           label="RED TEAM"
         />
       </div>
@@ -75,6 +94,11 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
             <div className="font-mono text-sm text-[var(--neon-green)]">
               {analysis.blue_team.length + analysis.red_team.length} PLAYERS SCANNED
             </div>
+            {analysis.hidden_players && analysis.hidden_players.length > 0 && (
+              <div className="font-mono text-xs text-[var(--text-muted)] mt-1">
+                {analysis.hidden_players.length} HIDDEN (STREAMER MODE)
+              </div>
+            )}
           </div>
           <TeamThreatLevel team="red" players={analysis.red_team} />
         </div>
@@ -86,16 +110,23 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
 interface TeamSectionProps {
   team: "blue" | "red";
   players: MatchAnalysisResponse["blue_team"];
+  hiddenPlayers: HiddenPlayer[];
   label: string;
 }
 
-function TeamSection({ team, players, label }: TeamSectionProps) {
+function TeamSection({ team, players, hiddenPlayers, label }: TeamSectionProps) {
   const isBlue = team === "blue";
   const teamColor = isBlue ? "var(--team-blue)" : "var(--team-red)";
   const glowClass = isBlue ? "glow-team-blue" : "glow-team-red";
 
-  // Sort players by position: TOP, JUNGLE, MID, BOT, SUPPORT
-  const sortedPlayers = sortByPosition(players);
+  // Combine analyzed and hidden players into a unified list for display
+  const displayPlayers: DisplayPlayer[] = [
+    ...players.map((p) => ({ type: "analyzed" as const, data: p })),
+    ...hiddenPlayers.map((p) => ({ type: "hidden" as const, data: p })),
+  ];
+
+  // Sort by position: TOP, JUNGLE, MID, BOT, SUPPORT
+  const sortedDisplayPlayers = sortDisplayPlayers(displayPlayers);
 
   return (
     <div className="space-y-4">
@@ -118,23 +149,27 @@ function TeamSection({ team, players, label }: TeamSectionProps) {
 
       {/* Player cards */}
       <div className="space-y-3">
-        {sortedPlayers.map((player, index) => (
+        {sortedDisplayPlayers.map((displayPlayer, index) => (
           <div
-            key={player.puuid}
+            key={displayPlayer.type === "analyzed" ? displayPlayer.data.puuid : `hidden-${displayPlayer.data.champion_id}-${index}`}
             className="animate-slide-up"
             style={{ animationDelay: `${index * 0.1}s`, opacity: 0 }}
           >
-            <PlayerCard
-              analysis={player}
-              championName={
-                player.champion_id
-                  ? CHAMPION_NAMES[player.champion_id] || `Champion ${player.champion_id}`
-                  : undefined
-              }
-            />
+            {displayPlayer.type === "analyzed" ? (
+              <PlayerCard
+                analysis={displayPlayer.data}
+                championName={
+                  displayPlayer.data.champion_id
+                    ? CHAMPION_NAMES[displayPlayer.data.champion_id] || `Champion ${displayPlayer.data.champion_id}`
+                    : undefined
+                }
+              />
+            ) : (
+              <StreamerModeCard player={displayPlayer.data} />
+            )}
           </div>
         ))}
-        {players.length === 0 && (
+        {sortedDisplayPlayers.length === 0 && (
           <div className="glass-card p-8 text-center">
             <p className="text-[var(--text-muted)] font-mono text-sm">
               No player data available

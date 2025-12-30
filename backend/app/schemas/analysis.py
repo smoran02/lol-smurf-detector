@@ -81,6 +81,15 @@ class MatchAnalysisRequest(BaseModel):
     puuid: str
 
 
+class HiddenPlayer(BaseModel):
+    """Player with privacy settings enabled (streamer mode)."""
+
+    champion_id: int
+    position: Position = Position.UNKNOWN
+    team_id: int  # 100 for blue, 200 for red
+    is_hidden: bool = True  # Always true, used to distinguish from analyzed players
+
+
 class MatchAnalysisResponse(BaseModel):
     """Analysis results for all players in a match."""
 
@@ -88,3 +97,4 @@ class MatchAnalysisResponse(BaseModel):
     game_mode: str
     blue_team: list[SmurfAnalysisResponse]
     red_team: list[SmurfAnalysisResponse]
+    hidden_players: list[HiddenPlayer] = []  # Players with streamer mode enabled

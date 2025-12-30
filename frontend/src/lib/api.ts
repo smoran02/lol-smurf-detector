@@ -114,14 +114,14 @@ const CHAMPION_KEYS: Record<number, string> = {
   143: "Zyra", 145: "Kaisa", 147: "Seraphine", 150: "Gnar", 154: "Zac",
   157: "Yasuo", 161: "Velkoz", 163: "Taliyah", 164: "Camille", 166: "Akshan",
   200: "Belveth", 201: "Braum", 202: "Jhin", 203: "Kindred", 221: "Zeri",
-  222: "Jinx", 223: "TahmKench", 234: "Viego", 235: "Senna", 236: "Lucian",
+  222: "Jinx", 223: "TahmKench", 233: "Briar", 234: "Viego", 235: "Senna", 236: "Lucian",
   238: "Zed", 240: "Kled", 245: "Ekko", 246: "Qiyana", 254: "Vi",
   266: "Aatrox", 267: "Nami", 268: "Azir", 350: "Yuumi", 360: "Samira",
   412: "Thresh", 420: "Illaoi", 421: "RekSai", 427: "Ivern", 429: "Kalista",
   432: "Bard", 497: "Rakan", 498: "Xayah", 516: "Ornn", 517: "Sylas",
   518: "Neeko", 523: "Aphelios", 526: "Rell", 555: "Pyke", 711: "Vex",
   777: "Yone", 875: "Sett", 876: "Lillia", 887: "Gwen", 888: "Renata",
-  799: "Ambessa", 804: "Yunara", 904: "Zaahen",
+  799: "Ambessa", 800: "Mel", 804: "Yunara", 904: "Zaahen",
   893: "Aurora", 895: "Nilah", 897: "KSante", 901: "Smolder", 902: "Milio",
   910: "Hwei", 950: "Naafiri",
 };
@@ -153,14 +153,14 @@ export const CHAMPION_NAMES: Record<number, string> = {
   143: "Zyra", 145: "Kai'Sa", 147: "Seraphine", 150: "Gnar", 154: "Zac",
   157: "Yasuo", 161: "Vel'Koz", 163: "Taliyah", 164: "Camille", 166: "Akshan",
   200: "Bel'Veth", 201: "Braum", 202: "Jhin", 203: "Kindred", 221: "Zeri",
-  222: "Jinx", 223: "Tahm Kench", 234: "Viego", 235: "Senna", 236: "Lucian",
+  222: "Jinx", 223: "Tahm Kench", 233: "Briar", 234: "Viego", 235: "Senna", 236: "Lucian",
   238: "Zed", 240: "Kled", 245: "Ekko", 246: "Qiyana", 254: "Vi",
   266: "Aatrox", 267: "Nami", 268: "Azir", 350: "Yuumi", 360: "Samira",
   412: "Thresh", 420: "Illaoi", 421: "Rek'Sai", 427: "Ivern", 429: "Kalista",
   432: "Bard", 497: "Rakan", 498: "Xayah", 516: "Ornn", 517: "Sylas",
   518: "Neeko", 523: "Aphelios", 526: "Rell", 555: "Pyke", 711: "Vex",
   777: "Yone", 875: "Sett", 876: "Lillia", 887: "Gwen", 888: "Renata Glasc",
-  799: "Ambessa", 804: "Yunara", 904: "Zaahen",
+  799: "Ambessa", 800: "Mel", 804: "Yunara", 904: "Zaahen",
   893: "Aurora", 895: "Nilah", 897: "K'Sante", 901: "Smolder", 902: "Milio",
   910: "Hwei", 950: "Naafiri",
 };
@@ -186,11 +186,19 @@ export interface LiveGameResponse {
   participants: LiveGameParticipant[];
 }
 
+export interface HiddenPlayer {
+  champion_id: number;
+  position: Position;
+  team_id: number; // 100 for blue, 200 for red
+  is_hidden: boolean; // Always true
+}
+
 export interface MatchAnalysisResponse {
   game_id: number;
   game_mode: string;
   blue_team: SmurfAnalysisResponse[];
   red_team: SmurfAnalysisResponse[];
+  hidden_players: HiddenPlayer[];
 }
 
 class ApiError extends Error {

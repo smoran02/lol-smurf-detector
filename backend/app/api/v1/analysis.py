@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from app.algorithms.smurf_detector import smurf_detector
 from app.core.exceptions import SummonerNotFound
 from app.schemas.analysis import (
+    HiddenPlayer,
     IndicatorScores,
     MatchAnalysisResponse,
     Position,
@@ -17,7 +18,7 @@ from app.schemas.analysis import (
     SmurfClassification,
 )
 from app.services.match_service import match_service
-from app.services.position_inference import infer_team_positions
+from app.services.position_inference import infer_position, infer_team_positions
 from app.services.riot_api import riot_api
 
 logger = logging.getLogger(__name__)
@@ -176,10 +177,17 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
     participant_info = {}
     blue_team_participants = []
     red_team_participants = []
+    hidden_players_data = []  # Players with streamer mode (no puuid)
 
     for participant in live_game.participants:
-        # Skip participants without a puuid (bots or private profiles)
+        # Handle participants without a puuid (bots or streamer mode)
         if not participant.puuid:
+            hidden_players_data.append({
+                "champion_id": participant.champion_id,
+                "team_id": participant.team_id,
+                "spell1_id": participant.spell1_id,
+                "spell2_id": participant.spell2_id,
+            })
             continue
 
         # Parse Riot ID from the riotId field (format: "Name#Tag")
@@ -247,9 +255,41 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
         else:
             red_results.append(result)
 
+    # Build hidden player objects with inferred positions
+    hidden_players = []
+    # Track assigned positions per team to avoid duplicates
+    blue_assigned = {all_positions.get(p, Position.UNKNOWN) for p in blue_team_puuids}
+    red_assigned = {all_positions.get(p, Position.UNKNOWN) for p in red_team_puuids}
+
+    for hp_data in hidden_players_data:
+        team_id = hp_data["team_id"]
+        assigned = blue_assigned if team_id == 100 else red_assigned
+
+        # Infer position for this hidden player
+        pos = infer_position(
+            hp_data["champion_id"],
+            hp_data["spell1_id"],
+            hp_data["spell2_id"],
+        )
+
+        # If position already taken, try to find an unassigned one
+        if pos in assigned:
+            all_pos = [Position.TOP, Position.JUNGLE, Position.MID, Position.BOT, Position.SUPPORT]
+            available = [p for p in all_pos if p not in assigned]
+            pos = available[0] if available else Position.UNKNOWN
+
+        assigned.add(pos)
+
+        hidden_players.append(HiddenPlayer(
+            champion_id=hp_data["champion_id"],
+            position=pos,
+            team_id=team_id,
+        ))
+
     return MatchAnalysisResponse(
         game_id=live_game.game_id,
         game_mode=get_queue_name(live_game.game_queue_config_id, live_game.game_mode),
         blue_team=blue_results,
         red_team=red_results,
+        hidden_players=hidden_players,
     )

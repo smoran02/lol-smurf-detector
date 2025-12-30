@@ -176,7 +176,9 @@ CHAMPION_POSITIONS: dict[int, Position] = {
     902: Position.SUPPORT,# Milio
     910: Position.MID,    # Hwei
     950: Position.JUNGLE, # Naafiri (also mid)
+    233: Position.JUNGLE, # Briar
     799: Position.TOP,    # Ambessa
+    800: Position.MID,    # Mel
     804: Position.MID,    # Yunara
     904: Position.MID,    # Zaahen
 }
