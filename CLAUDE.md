@@ -1,3 +1,98 @@
+# LoL Smurf Detector - Project Context
+
+## Overview
+A web application that detects smurf accounts in League of Legends matches by analyzing player statistics and behavior patterns. Users enter their Riot ID, and the app analyzes all players in their current live game.
+
+**Status:** Proof of concept - algorithm needs refinement with more data access (requires production API key)
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 16, React 19, TypeScript, TailwindCSS v4 |
+| Backend | FastAPI, Python 3.11+, async/await |
+| Database | PostgreSQL with SQLAlchemy (async) |
+| External API | Riot Games API (League of Legends) |
+| Deployment | Docker, Docker Compose |
+
+## Project Structure
+
+```
+lol-smurf-detector/
+├── frontend/                 # Next.js frontend
+│   └── src/
+│       ├── app/              # Pages and layouts
+│       ├── components/       # React components
+│       │   ├── match/        # LiveMatchCard
+│       │   ├── player/       # PlayerCard, SmurfIndicator
+│       │   └── search/       # SummonerSearch
+│       ├── hooks/            # React Query hooks
+│       └── lib/              # API client, utilities
+├── backend/                  # FastAPI backend
+│   └── app/
+│       ├── api/v1/           # API routes (summoner, match, analysis)
+│       ├── algorithms/       # Smurf detection logic
+│       ├── services/         # Riot API client, rate limiting
+│       ├── models/           # SQLAlchemy models
+│       └── config.py         # Environment configuration
+└── docker-compose.yml        # Container orchestration
+```
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `backend/.env` | API keys and config (RIOT_API_KEY, DATABASE_URL) |
+| `backend/app/algorithms/` | Smurf detection scoring logic |
+| `backend/app/services/riot_api.py` | Riot API client with rate limiting |
+| `frontend/src/lib/api.ts` | Frontend API client, champion data |
+| `frontend/src/app/globals.css` | Design system (Neon Detective theme) |
+
+## Running Locally
+
+```bash
+# Backend (requires .env with RIOT_API_KEY)
+cd backend
+.\venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
+
+# Frontend
+cd frontend
+npm run dev
+```
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+## Smurf Detection Algorithm
+
+Analyzes 7 indicators, each scored 0-100:
+1. **Win Rate** - High win rate on new account
+2. **Level vs Performance** - Low level but high skill metrics
+3. **Champion Pool** - Small pool with high mastery (one-tricks)
+4. **CS/min** - Creep score efficiency
+5. **KDA** - Kill/Death/Assist ratio
+6. **Game Frequency** - Games per day pattern
+7. **Account Age Ratio** - Account age vs games played
+
+**Classifications:** LIKELY_SMURF (70+), POSSIBLE_SMURF (50-70), UNLIKELY (<30), UNKNOWN
+
+## Current Limitations
+
+- Dev API key expires every 24 hours (need production key)
+- Rate limits: 20 req/sec, 100 req/2min
+- Algorithm weights need tuning with more data
+- No historical data collection yet
+
+## Next Steps
+
+1. Add legal pages (Privacy Policy, Terms, Riot attribution)
+2. Deploy publicly (Vercel + Railway)
+3. Apply for Riot production API key
+4. Gather data to improve detection algorithm
+
+---
+
 # General Development Best Practices
 
 This document contains general coding standards and best practices applicable across multiple projects.
