@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { api, SummonerResponse, LiveGameResponse, MatchAnalysisResponse } from "@/lib/api";
+import { api } from "@/lib/api";
 
 /**
  * Hook to fetch summoner data by Riot ID.

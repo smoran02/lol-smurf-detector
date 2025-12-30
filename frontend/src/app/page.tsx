@@ -23,15 +23,16 @@ export default function Home() {
 
   // Only show cold start message if summoner lookup takes > 2 seconds
   useEffect(() => {
-    if (summonerLoading) {
-      setShowColdStartMessage(false);
-      const timer = setTimeout(() => {
-        setShowColdStartMessage(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    } else {
-      setShowColdStartMessage(false);
+    if (!summonerLoading) {
+      return;
     }
+    const timer = setTimeout(() => {
+      setShowColdStartMessage(true);
+    }, 2000);
+    return () => {
+      clearTimeout(timer);
+      setShowColdStartMessage(false);
+    };
   }, [summonerLoading]);
 
   const handleSearch = (name: string, tag: string) => {
@@ -77,7 +78,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-2 text-xs font-mono">
             <span className="w-2 h-2 rounded-full bg-[var(--neon-green)] animate-pulse" />
             <span className="text-[var(--neon-green)]">SYSTEM ONLINE</span>
-            <span className="text-[var(--text-muted)]">//</span>
+            <span className="text-[var(--text-muted)]">{"/"}</span>
             <span className="text-[var(--text-muted)]">READY TO ANALYZE</span>
           </div>
         </header>
@@ -241,7 +242,7 @@ export default function Home() {
         {/* Footer */}
         <footer className="text-center pt-12 border-t border-[var(--border-dim)] space-y-4">
           <p className="font-mono text-xs text-[var(--text-muted)] tracking-wider">
-            POWERED BY RIOT GAMES API // NOT ENDORSED BY RIOT GAMES
+            POWERED BY RIOT GAMES API | NOT ENDORSED BY RIOT GAMES
           </p>
           <div className="flex items-center justify-center gap-4 text-xs font-mono">
             <a href="/privacy" className="text-[var(--text-muted)] hover:text-[var(--neon-cyan)] transition-colors">

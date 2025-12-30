@@ -13,15 +13,6 @@ type DisplayPlayer =
   | { type: "analyzed"; data: SmurfAnalysisResponse }
   | { type: "hidden"; data: HiddenPlayer };
 
-// Sort players by position: TOP, JUNGLE, MID, BOT, SUPPORT
-function sortByPosition(players: SmurfAnalysisResponse[]): SmurfAnalysisResponse[] {
-  return [...players].sort((a, b) => {
-    const orderA = POSITION_ORDER[a.position] ?? 5;
-    const orderB = POSITION_ORDER[b.position] ?? 5;
-    return orderA - orderB;
-  });
-}
-
 // Sort display players (both analyzed and hidden) by position
 function sortDisplayPlayers(players: DisplayPlayer[]): DisplayPlayer[] {
   return [...players].sort((a, b) => {
