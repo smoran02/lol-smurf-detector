@@ -1,6 +1,6 @@
 "use client";
 
-import { SmurfAnalysisResponse } from "@/lib/api";
+import { SmurfAnalysisResponse, getChampionImageUrl } from "@/lib/api";
 import { SmurfIndicator, ScoreBar } from "./SmurfIndicator";
 import { useState } from "react";
 
@@ -14,101 +14,217 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
 
   const displayName = analysis.riot_id_name || "Unknown Player";
   const displayTag = analysis.riot_id_tag || "???";
+  const championImageUrl = analysis.champion_id
+    ? getChampionImageUrl(analysis.champion_id)
+    : null;
+
+  // Get border accent based on classification
+  const getBorderAccent = () => {
+    switch (analysis.classification) {
+      case "LIKELY_SMURF":
+        return "hover:border-[var(--neon-red)]/50";
+      case "POSSIBLE_SMURF":
+        return "hover:border-[var(--neon-orange)]/50";
+      case "UNLIKELY":
+        return "hover:border-[var(--neon-green)]/50";
+      default:
+        return "hover:border-[var(--border-glow)]";
+    }
+  };
+
+  // Get ring color based on classification
+  const getChampionRingColor = () => {
+    switch (analysis.classification) {
+      case "LIKELY_SMURF":
+        return "ring-[var(--neon-red)]/60";
+      case "POSSIBLE_SMURF":
+        return "ring-[var(--neon-orange)]/60";
+      case "UNLIKELY":
+        return "ring-[var(--neon-green)]/60";
+      default:
+        return "ring-[var(--border-glow)]";
+    }
+  };
 
   return (
     <div
-      className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
+      className={`
+        glass-card glass-card-hover p-4 cursor-pointer
+        border border-[var(--border-dim)] ${getBorderAccent()}
+        transition-all duration-300
+        ${expanded ? "ring-1 ring-[var(--border-glow)]" : ""}
+      `}
       onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-white">
-              {displayName}
-              <span className="text-gray-400">#{displayTag}</span>
-            </h3>
-            <span className="text-xs px-2 py-0.5 bg-gray-700 rounded text-gray-300">
-              Lv. {analysis.summoner_level}
-            </span>
-          </div>
-          {championName && (
-            <p className="text-sm text-gray-400 mt-1">{championName}</p>
+      {/* Main row */}
+      <div className="flex items-center justify-between gap-4">
+        {/* Champion portrait + Player info */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Champion image */}
+          {championImageUrl ? (
+            <div className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden ring-2 ${getChampionRingColor()} bg-[var(--bg-elevated)]`}>
+              <img
+                src={championImageUrl}
+                alt={championName || "Champion"}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="shrink-0 w-12 h-12 rounded-lg bg-[var(--bg-elevated)] ring-2 ring-[var(--border-dim)] flex items-center justify-center">
+              <span className="text-[var(--text-muted)] text-xs font-mono">?</span>
+            </div>
           )}
+
+          {/* Player name */}
+          <div className="min-w-0">
+            <h3 className="font-medium text-[var(--text-primary)] truncate">
+              {displayName}
+              <span className="text-[var(--text-muted)] ml-1">#{displayTag}</span>
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              {/* Level badge */}
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--bg-elevated)] rounded text-xs font-mono text-[var(--text-secondary)]">
+                <span className="text-[var(--text-muted)]">LV</span>
+                <span>{analysis.summoner_level}</span>
+              </span>
+              {/* Champion name */}
+              {championName && (
+                <span className="text-sm text-[var(--neon-cyan)] font-mono truncate">
+                  {championName}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
-        <SmurfIndicator
-          score={analysis.total_score}
-          classification={analysis.classification}
-          size="sm"
-        />
+        {/* Score indicator */}
+        <div className="shrink-0">
+          <SmurfIndicator
+            score={analysis.total_score}
+            classification={analysis.classification}
+            size="sm"
+          />
+        </div>
+
+        {/* Expand indicator */}
+        <div className="shrink-0">
+          <svg
+            className={`w-5 h-5 text-[var(--text-muted)] transition-transform duration-300 ${
+              expanded ? "rotate-180" : ""
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
       </div>
 
+      {/* Expanded content */}
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-gray-700 space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-400">Win Rate:</span>
-              <span className="ml-2 text-white">
-                {analysis.raw_metrics.winrate?.toFixed(1) ?? "N/A"}%
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-400">KDA:</span>
-              <span className="ml-2 text-white">
-                {analysis.raw_metrics.avg_kda?.toFixed(2) ?? "N/A"}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-400">CS/min:</span>
-              <span className="ml-2 text-white">
-                {analysis.raw_metrics.avg_cs_per_min?.toFixed(1) ?? "N/A"}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-400">Champions:</span>
-              <span className="ml-2 text-white">
-                {analysis.raw_metrics.unique_champions ?? "N/A"}
-              </span>
+        <div className="mt-4 pt-4 border-t border-[var(--border-dim)] space-y-5 animate-slide-up">
+          {/* Raw metrics */}
+          <div>
+            <h4 className="data-label mb-3">RAW METRICS</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <MetricDisplay
+                label="Win Rate"
+                value={analysis.raw_metrics.winrate}
+                suffix="%"
+                decimals={1}
+              />
+              <MetricDisplay
+                label="KDA"
+                value={analysis.raw_metrics.avg_kda}
+                decimals={2}
+              />
+              <MetricDisplay
+                label="CS/min"
+                value={analysis.raw_metrics.avg_cs_per_min}
+                decimals={1}
+              />
+              <MetricDisplay
+                label="Champions"
+                value={analysis.raw_metrics.unique_champions}
+                decimals={0}
+              />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-              Indicator Breakdown
-            </h4>
-            <ScoreBar
-              label="Win Rate"
-              score={analysis.indicator_scores.winrate}
-            />
-            <ScoreBar
-              label="Level vs Performance"
-              score={analysis.indicator_scores.level_performance}
-            />
-            <ScoreBar
-              label="Champion Pool"
-              score={analysis.indicator_scores.champion_pool}
-            />
-            <ScoreBar
-              label="CS/min"
-              score={analysis.indicator_scores.cs_per_min}
-            />
-            <ScoreBar label="KDA" score={analysis.indicator_scores.kda} />
-            <ScoreBar
-              label="Game Frequency"
-              score={analysis.indicator_scores.game_frequency}
-            />
-            <ScoreBar
-              label="Account Age"
-              score={analysis.indicator_scores.account_age_ratio}
-            />
+          {/* Indicator breakdown */}
+          <div>
+            <h4 className="data-label mb-3">INDICATOR BREAKDOWN</h4>
+            <div className="space-y-3">
+              <ScoreBar
+                label="Win Rate"
+                score={analysis.indicator_scores.winrate}
+              />
+              <ScoreBar
+                label="Level vs Performance"
+                score={analysis.indicator_scores.level_performance}
+              />
+              <ScoreBar
+                label="Champion Pool"
+                score={analysis.indicator_scores.champion_pool}
+              />
+              <ScoreBar
+                label="CS/min"
+                score={analysis.indicator_scores.cs_per_min}
+              />
+              <ScoreBar
+                label="KDA"
+                score={analysis.indicator_scores.kda}
+              />
+              <ScoreBar
+                label="Game Frequency"
+                score={analysis.indicator_scores.game_frequency}
+              />
+              <ScoreBar
+                label="Account Age"
+                score={analysis.indicator_scores.account_age_ratio}
+              />
+            </div>
           </div>
 
-          <div className="text-xs text-gray-500">
-            Based on {analysis.raw_metrics.games_analyzed} games | Confidence:{" "}
-            {analysis.confidence}
+          {/* Footer info */}
+          <div className="flex items-center justify-between text-xs font-mono pt-2 border-t border-[var(--border-dim)]">
+            <span className="text-[var(--text-muted)]">
+              {analysis.raw_metrics.games_analyzed} games analyzed
+            </span>
+            <span className="text-[var(--neon-cyan)]">
+              {analysis.confidence} confidence
+            </span>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface MetricDisplayProps {
+  label: string;
+  value: number | null | undefined;
+  suffix?: string;
+  decimals?: number;
+}
+
+function MetricDisplay({ label, value, suffix = "", decimals = 1 }: MetricDisplayProps) {
+  const displayValue = value !== null && value !== undefined
+    ? value.toFixed(decimals) + suffix
+    : "N/A";
+
+  return (
+    <div className="bg-[var(--bg-elevated)] rounded-lg p-3">
+      <div className="data-label mb-1">{label}</div>
+      <div className="font-mono text-lg text-[var(--text-primary)]">
+        {displayValue}
+      </div>
     </div>
   );
 }
