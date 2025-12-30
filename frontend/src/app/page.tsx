@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SummonerSearch } from "@/components/search/SummonerSearch";
 import { LiveMatchCard } from "@/components/match/LiveMatchCard";
 import { useSummoner, useMatchAnalysis } from "@/hooks/useSmurfAnalysis";
 
 export default function Home() {
   const [riotId, setRiotId] = useState<{ name: string; tag: string } | null>(null);
+  const [showColdStartMessage, setShowColdStartMessage] = useState(false);
 
   const {
     data: summoner,
@@ -19,6 +20,19 @@ export default function Home() {
     isLoading: analysisLoading,
     error: analysisError,
   } = useMatchAnalysis(summoner?.puuid ?? "", !!summoner?.puuid);
+
+  // Only show cold start message if summoner lookup takes > 2 seconds
+  useEffect(() => {
+    if (summonerLoading) {
+      setShowColdStartMessage(false);
+      const timer = setTimeout(() => {
+        setShowColdStartMessage(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowColdStartMessage(false);
+    }
+  }, [summonerLoading]);
 
   const handleSearch = (name: string, tag: string) => {
     setRiotId({ name, tag });
@@ -137,8 +151,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading State - Summoner Lookup */}
-        {summonerLoading && (
+        {/* Loading State - Summoner Lookup (only shows after 2s delay for cold starts) */}
+        {summonerLoading && showColdStartMessage && (
           <div className="animate-slide-up text-center py-16">
             {/* Animated scanner */}
             <div className="relative inline-block mb-8">

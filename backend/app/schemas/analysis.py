@@ -15,6 +15,17 @@ class SmurfClassification(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class Position(str, Enum):
+    """Player position in game."""
+
+    TOP = "TOP"
+    JUNGLE = "JUNGLE"
+    MID = "MID"
+    BOT = "BOT"
+    SUPPORT = "SUPPORT"
+    UNKNOWN = "UNKNOWN"
+
+
 class IndicatorScores(BaseModel):
     """Individual indicator scores (0-100)."""
 
@@ -46,6 +57,7 @@ class SmurfAnalysisResponse(BaseModel):
     riot_id_tag: str
     summoner_level: int
     champion_id: int | None = None  # Champion being played in live game
+    position: Position = Position.UNKNOWN  # Inferred position in game
 
     # Overall result
     total_score: float = Field(ge=0, le=100)

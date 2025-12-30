@@ -1,10 +1,19 @@
 "use client";
 
-import { MatchAnalysisResponse, CHAMPION_NAMES } from "@/lib/api";
+import { MatchAnalysisResponse, CHAMPION_NAMES, POSITION_ORDER, SmurfAnalysisResponse } from "@/lib/api";
 import { PlayerCard } from "../player/PlayerCard";
 
 interface LiveMatchCardProps {
   analysis: MatchAnalysisResponse;
+}
+
+// Sort players by position: TOP, JUNGLE, MID, BOT, SUPPORT
+function sortByPosition(players: SmurfAnalysisResponse[]): SmurfAnalysisResponse[] {
+  return [...players].sort((a, b) => {
+    const orderA = POSITION_ORDER[a.position] ?? 5;
+    const orderB = POSITION_ORDER[b.position] ?? 5;
+    return orderA - orderB;
+  });
 }
 
 export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
@@ -85,6 +94,9 @@ function TeamSection({ team, players, label }: TeamSectionProps) {
   const teamColor = isBlue ? "var(--team-blue)" : "var(--team-red)";
   const glowClass = isBlue ? "glow-team-blue" : "glow-team-red";
 
+  // Sort players by position: TOP, JUNGLE, MID, BOT, SUPPORT
+  const sortedPlayers = sortByPosition(players);
+
   return (
     <div className="space-y-4">
       {/* Team header */}
@@ -106,7 +118,7 @@ function TeamSection({ team, players, label }: TeamSectionProps) {
 
       {/* Player cards */}
       <div className="space-y-3">
-        {players.map((player, index) => (
+        {sortedPlayers.map((player, index) => (
           <div
             key={player.puuid}
             className="animate-slide-up"

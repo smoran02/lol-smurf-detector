@@ -11,11 +11,13 @@ from app.core.exceptions import SummonerNotFound
 from app.schemas.analysis import (
     IndicatorScores,
     MatchAnalysisResponse,
+    Position,
     RawMetrics,
     SmurfAnalysisResponse,
     SmurfClassification,
 )
 from app.services.match_service import match_service
+from app.services.position_inference import infer_team_positions
 from app.services.riot_api import riot_api
 
 logger = logging.getLogger(__name__)
@@ -52,6 +54,7 @@ async def analyze_player_by_puuid(
     riot_id_name: str = "",
     riot_id_tag: str = "",
     champion_id: int | None = None,
+    position: Position = Position.UNKNOWN,
 ) -> SmurfAnalysisResponse:
     """Analyze a single player for smurf indicators.
 
@@ -60,6 +63,7 @@ async def analyze_player_by_puuid(
         riot_id_name: Optional Riot ID game name (from live game)
         riot_id_tag: Optional Riot ID tag (from live game)
         champion_id: Optional champion ID (from live game)
+        position: Optional inferred position (from live game)
 
     Returns:
         SmurfAnalysisResponse with analysis results
@@ -111,6 +115,7 @@ async def analyze_player_by_puuid(
         riot_id_tag=riot_id_tag,
         summoner_level=summoner.summoner_level,
         champion_id=champion_id,
+        position=position,
         total_score=result.total_score,
         classification=SmurfClassification(result.classification.value),
         confidence=result.confidence,
@@ -169,8 +174,8 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
 
     # Build participant info map
     participant_info = {}
-    blue_team_puuids = []
-    red_team_puuids = []
+    blue_team_participants = []
+    red_team_participants = []
 
     for participant in live_game.participants:
         # Skip participants without a puuid (bots or private profiles)
@@ -187,16 +192,29 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
         elif participant.summoner_name:
             riot_id_name = participant.summoner_name
 
-        participant_info[participant.puuid] = {
+        p_data = {
+            "puuid": participant.puuid,
             "riot_id_name": riot_id_name,
             "riot_id_tag": riot_id_tag,
             "champion_id": participant.champion_id,
+            "spell1_id": participant.spell1_id,
+            "spell2_id": participant.spell2_id,
         }
 
+        participant_info[participant.puuid] = p_data
+
         if participant.team_id == 100:
-            blue_team_puuids.append(participant.puuid)
+            blue_team_participants.append(p_data)
         else:
-            red_team_puuids.append(participant.puuid)
+            red_team_participants.append(p_data)
+
+    # Infer positions for each team
+    blue_positions = infer_team_positions(blue_team_participants)
+    red_positions = infer_team_positions(red_team_participants)
+    all_positions = {**blue_positions, **red_positions}
+
+    blue_team_puuids = [p["puuid"] for p in blue_team_participants]
+    red_team_puuids = [p["puuid"] for p in red_team_participants]
 
     # Analyze all players concurrently
     async def safe_analyze(p: str) -> SmurfAnalysisResponse | None:
@@ -207,6 +225,7 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
                 riot_id_name=info.get("riot_id_name", ""),
                 riot_id_tag=info.get("riot_id_tag", ""),
                 champion_id=info.get("champion_id"),
+                position=all_positions.get(p, Position.UNKNOWN),
             )
         except Exception as e:
             logger.warning(f"Failed to analyze player {p}: {e}")

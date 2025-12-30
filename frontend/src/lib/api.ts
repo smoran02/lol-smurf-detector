@@ -48,12 +48,25 @@ export type SmurfClassification =
   | "UNLIKELY"
   | "UNKNOWN";
 
+export type Position = "TOP" | "JUNGLE" | "MID" | "BOT" | "SUPPORT" | "UNKNOWN";
+
+// Position sort order: TOP, JUNGLE, MID, BOT, SUPPORT
+export const POSITION_ORDER: Record<Position, number> = {
+  TOP: 0,
+  JUNGLE: 1,
+  MID: 2,
+  BOT: 3,
+  SUPPORT: 4,
+  UNKNOWN: 5,
+};
+
 export interface SmurfAnalysisResponse {
   puuid: string;
   riot_id_name: string;
   riot_id_tag: string;
   summoner_level: number;
   champion_id: number | null;
+  position: Position;
   total_score: number;
   classification: SmurfClassification;
   confidence: string;
