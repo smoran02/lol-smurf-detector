@@ -137,7 +137,47 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading State */}
+        {/* Loading State - Summoner Lookup */}
+        {summonerLoading && (
+          <div className="animate-slide-up text-center py-16">
+            {/* Animated scanner */}
+            <div className="relative inline-block mb-8">
+              <div className="w-24 h-24 border-2 border-[var(--neon-magenta)] rounded-full animate-glow-pulse" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 border-2 border-[var(--neon-cyan)] rounded-full animate-spin" style={{ animationDuration: '2s' }} />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 bg-[var(--neon-magenta)] rounded-full animate-pulse opacity-50" />
+              </div>
+            </div>
+
+            <h3 className="font-display text-xl text-neon-magenta glow-magenta mb-3">
+              CONNECTING
+            </h3>
+            <p className="text-[var(--text-secondary)] font-mono text-sm mb-2">
+              Looking up player...
+            </p>
+            <p className="text-[var(--text-muted)] text-xs font-mono">
+              First request may take ~30s if server is waking up
+            </p>
+
+            {/* Progress dots */}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-[var(--neon-magenta)]"
+                  style={{
+                    animation: 'pulse-glow 1s ease-in-out infinite',
+                    animationDelay: `${i * 0.15}s`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Loading State - Match Analysis */}
         {analysisLoading && (
           <div className="animate-slide-up text-center py-16">
             {/* Animated scanner */}
