@@ -1,9 +1,8 @@
 """Match history fetching and processing service."""
 
 import logging
-from datetime import datetime
 
-from app.schemas.match import MatchParticipant, MatchResponse
+from app.schemas.match import MatchResponse
 from app.services.riot_api import riot_api
 
 logger = logging.getLogger(__name__)

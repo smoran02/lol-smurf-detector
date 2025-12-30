@@ -1,6 +1,5 @@
 """SQLAlchemy database models."""
 
-from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import (
@@ -13,7 +12,6 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
-    Text,
     func,
 )
 from sqlalchemy.orm import DeclarativeBase, relationship

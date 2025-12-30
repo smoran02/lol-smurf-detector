@@ -32,5 +32,5 @@ async def get_live_match(puuid: str) -> LiveGameResponse:
     except SummonerNotFound:
         raise HTTPException(
             status_code=404,
-            detail=f"Player is not currently in a game",
+            detail="Player is not currently in a game",
         )
