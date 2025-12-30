@@ -185,10 +185,32 @@ export default function Home() {
         )}
 
         {/* Footer */}
-        <footer className="text-center pt-12 border-t border-[var(--border-dim)]">
+        <footer className="text-center pt-12 border-t border-[var(--border-dim)] space-y-4">
           <p className="font-mono text-xs text-[var(--text-muted)] tracking-wider">
             POWERED BY RIOT GAMES API // NOT ENDORSED BY RIOT GAMES
           </p>
+          <div className="flex items-center justify-center gap-4 text-xs font-mono">
+            <a href="/privacy" className="text-[var(--text-muted)] hover:text-[var(--neon-cyan)] transition-colors">
+              Privacy
+            </a>
+            <span className="text-[var(--border-dim)]">|</span>
+            <a href="/terms" className="text-[var(--text-muted)] hover:text-[var(--neon-cyan)] transition-colors">
+              Terms
+            </a>
+            <span className="text-[var(--border-dim)]">|</span>
+            <a href="/legal" className="text-[var(--text-muted)] hover:text-[var(--neon-cyan)] transition-colors">
+              Legal
+            </a>
+            <span className="text-[var(--border-dim)]">|</span>
+            <a
+              href="https://github.com/smoran02/lol-smurf-detector"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--text-muted)] hover:text-[var(--neon-cyan)] transition-colors"
+            >
+              GitHub
+            </a>
+          </div>
         </footer>
       </div>
     </main>
