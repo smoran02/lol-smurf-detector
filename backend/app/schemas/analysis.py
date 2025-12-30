@@ -84,7 +84,7 @@ class MatchAnalysisRequest(BaseModel):
 class HiddenPlayer(BaseModel):
     """Player with privacy settings enabled (streamer mode)."""
 
-    champion_id: int
+    champion_id: int | None = None  # None when completely hidden by Riot API
     position: Position = Position.UNKNOWN
     team_id: int  # 100 for blue, 200 for red
     is_hidden: bool = True  # Always true, used to distinguish from analyzed players

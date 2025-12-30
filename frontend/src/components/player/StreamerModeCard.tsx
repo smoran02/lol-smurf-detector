@@ -7,8 +7,10 @@ interface StreamerModeCardProps {
 }
 
 export function StreamerModeCard({ player }: StreamerModeCardProps) {
-  const championImageUrl = getChampionImageUrl(player.champion_id);
-  const championName = CHAMPION_NAMES[player.champion_id] || `Champion ${player.champion_id}`;
+  const championImageUrl = player.champion_id ? getChampionImageUrl(player.champion_id) : null;
+  const championName = player.champion_id
+    ? (CHAMPION_NAMES[player.champion_id] || `Champion ${player.champion_id}`)
+    : "Unknown";
 
   return (
     <div

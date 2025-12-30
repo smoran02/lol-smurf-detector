@@ -187,7 +187,7 @@ export interface LiveGameResponse {
 }
 
 export interface HiddenPlayer {
-  champion_id: number;
+  champion_id: number | null; // null when completely hidden by Riot API
   position: Position;
   team_id: number; // 100 for blue, 200 for red
   is_hidden: boolean; // Always true

@@ -255,9 +255,10 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
         else:
             red_results.append(result)
 
-    # Build hidden player objects with inferred positions
+    # Build hidden player objects
     hidden_players = []
-    # Track assigned positions per team to avoid duplicates
+
+    # First, handle any participants with null puuid (rare, but possible)
     blue_assigned = {all_positions.get(p, Position.UNKNOWN) for p in blue_team_puuids}
     red_assigned = {all_positions.get(p, Position.UNKNOWN) for p in red_team_puuids}
 
@@ -284,6 +285,29 @@ async def analyze_match(puuid: str) -> MatchAnalysisResponse:
             champion_id=hp_data["champion_id"],
             position=pos,
             team_id=team_id,
+        ))
+
+    # Detect completely hidden players (streamer mode excludes them from API entirely)
+    # Standard 5v5 should have 5 players per team
+    blue_visible = len(blue_team_participants) + len([h for h in hidden_players_data if h["team_id"] == 100])
+    red_visible = len(red_team_participants) + len([h for h in hidden_players_data if h["team_id"] == 200])
+
+    blue_hidden_count = max(0, 5 - blue_visible)
+    red_hidden_count = max(0, 5 - red_visible)
+
+    # Add placeholder hidden players for completely hidden streamer mode players
+    for _ in range(blue_hidden_count):
+        hidden_players.append(HiddenPlayer(
+            champion_id=None,  # Unknown - API doesn't tell us
+            position=Position.UNKNOWN,
+            team_id=100,
+        ))
+
+    for _ in range(red_hidden_count):
+        hidden_players.append(HiddenPlayer(
+            champion_id=None,  # Unknown - API doesn't tell us
+            position=Position.UNKNOWN,
+            team_id=200,
         ))
 
     return MatchAnalysisResponse(
