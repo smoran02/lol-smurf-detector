@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     DEBUG: bool = True
 
+    # CORS - comma-separated list of allowed origins
+    CORS_ORIGINS: str = "http://localhost:3000"
+
     # Riot API Hosts
     PLATFORM_HOST: str = "https://na1.api.riotgames.com"
     REGIONAL_HOST: str = "https://americas.api.riotgames.com"
