@@ -62,8 +62,8 @@ export interface SmurfAnalysisResponse {
   analyzed_at: string;
 }
 
-// Data Dragon version for champion images
-const DDRAGON_VERSION = "15.1.1";
+// Data Dragon version for champion images (use latest for newest champions)
+const DDRAGON_VERSION = "15.24.1";
 
 /**
  * Get the champion square image URL from Data Dragon CDN.
