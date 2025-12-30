@@ -53,22 +53,22 @@ export function StreamerModeCard({ player }: StreamerModeCardProps) {
                 <span>HIDDEN</span>
               </span>
               {/* Champion name */}
-              <span className="text-sm text-[var(--text-secondary)] font-mono truncate">
+              <span className="text-sm text-[var(--neon-cyan)] font-mono truncate">
                 {championName}
               </span>
             </div>
           </div>
         </div>
 
-        {/* No score indicator - just a placeholder */}
-        <div className="shrink-0 text-right">
-          <div className="text-xs font-mono text-[var(--text-muted)] uppercase">
-            Analysis
-          </div>
-          <div className="text-sm font-mono text-[var(--text-muted)]">
+        {/* Placeholder to match PlayerCard score indicator width */}
+        <div className="shrink-0 w-[52px] h-[52px] flex items-center justify-center">
+          <div className="text-xs font-mono text-[var(--text-muted)] text-center">
             N/A
           </div>
         </div>
+
+        {/* Placeholder for expand chevron to match PlayerCard height */}
+        <div className="shrink-0 w-5" />
       </div>
     </div>
   );
