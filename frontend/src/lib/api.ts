@@ -108,7 +108,7 @@ const CHAMPION_KEYS: Record<number, string> = {
   432: "Bard", 497: "Rakan", 498: "Xayah", 516: "Ornn", 517: "Sylas",
   518: "Neeko", 523: "Aphelios", 526: "Rell", 555: "Pyke", 711: "Vex",
   777: "Yone", 875: "Sett", 876: "Lillia", 887: "Gwen", 888: "Renata",
-  799: "Ambessa", 804: "Mel",
+  799: "Ambessa", 804: "Yunara",
   893: "Aurora", 895: "Nilah", 897: "KSante", 901: "Smolder", 902: "Milio",
   910: "Hwei", 950: "Naafiri",
 };
@@ -147,7 +147,7 @@ export const CHAMPION_NAMES: Record<number, string> = {
   432: "Bard", 497: "Rakan", 498: "Xayah", 516: "Ornn", 517: "Sylas",
   518: "Neeko", 523: "Aphelios", 526: "Rell", 555: "Pyke", 711: "Vex",
   777: "Yone", 875: "Sett", 876: "Lillia", 887: "Gwen", 888: "Renata Glasc",
-  799: "Ambessa", 804: "Mel",
+  799: "Ambessa", 804: "Yunara",
   893: "Aurora", 895: "Nilah", 897: "K'Sante", 901: "Smolder", 902: "Milio",
   910: "Hwei", 950: "Naafiri",
 };
