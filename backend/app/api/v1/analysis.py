@@ -114,6 +114,8 @@ async def analyze_player_by_puuid(
         riot_id_name=riot_id_name,
         riot_id_tag=riot_id_tag,
         summoner_level=summoner.summoner_level,
+        solo_tier=solo_tier,
+        solo_rank=solo_rank,
         champion_id=champion_id,
         position=position,
         total_score=result.total_score,

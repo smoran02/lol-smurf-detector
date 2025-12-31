@@ -64,6 +64,8 @@ export interface SmurfAnalysisResponse {
   riot_id_name: string;
   riot_id_tag: string;
   summoner_level: number;
+  solo_tier: string | null;
+  solo_rank: string | null;
   champion_id: number | null;
   position: Position;
   total_score: number;
@@ -84,6 +86,16 @@ export function getChampionImageUrl(championId: number): string | null {
   const key = CHAMPION_KEYS[championId];
   if (!key) return null;
   return `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${key}.png`;
+}
+
+/**
+ * Get the rank emblem image URL.
+ * Uses raw.communitydragon.org for rank emblems.
+ */
+export function getRankEmblemUrl(tier: string | null): string | null {
+  if (!tier) return null;
+  const tierLower = tier.toLowerCase();
+  return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/${tierLower}.svg`;
 }
 
 // Champion ID to Data Dragon key mapping (for image URLs)

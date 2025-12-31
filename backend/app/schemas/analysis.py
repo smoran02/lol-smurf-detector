@@ -55,6 +55,8 @@ class SmurfAnalysisResponse(BaseModel):
     riot_id_name: str
     riot_id_tag: str
     summoner_level: int
+    solo_tier: str | None = None  # Ranked tier (IRON, BRONZE, etc.)
+    solo_rank: str | None = None  # Rank within tier (I, II, III, IV)
     champion_id: int | None = None  # Champion being played in live game
     position: Position = Position.UNKNOWN  # Inferred position in game
 

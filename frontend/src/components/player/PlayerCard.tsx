@@ -1,6 +1,6 @@
 "use client";
 
-import { SmurfAnalysisResponse, getChampionImageUrl } from "@/lib/api";
+import { SmurfAnalysisResponse, getChampionImageUrl, getRankEmblemUrl } from "@/lib/api";
 import { SmurfIndicator, ScoreBar } from "./SmurfIndicator";
 import { useState } from "react";
 
@@ -17,6 +17,21 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
   const championImageUrl = analysis.champion_id
     ? getChampionImageUrl(analysis.champion_id)
     : null;
+  const rankEmblemUrl = getRankEmblemUrl(analysis.solo_tier);
+
+  // Format rank as short form (e.g., "D1" for Diamond I)
+  const getShortRank = () => {
+    if (!analysis.solo_tier) return null;
+    const tierShort: Record<string, string> = {
+      IRON: "I", BRONZE: "B", SILVER: "S", GOLD: "G",
+      PLATINUM: "P", EMERALD: "E", DIAMOND: "D",
+      MASTER: "M", GRANDMASTER: "GM", CHALLENGER: "C",
+    };
+    const rankNum: Record<string, string> = { I: "1", II: "2", III: "3", IV: "4" };
+    const t = tierShort[analysis.solo_tier] || analysis.solo_tier[0];
+    const r = analysis.solo_rank ? rankNum[analysis.solo_rank] || "" : "";
+    return t + r;
+  };
 
   // Get border accent based on classification
   const getBorderAccent = () => {
@@ -87,6 +102,19 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
                 <span className="text-[var(--text-muted)]">LV</span>
                 <span>{analysis.summoner_level}</span>
               </span>
+              {/* Rank badge */}
+              {analysis.solo_tier && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--bg-elevated)] rounded text-xs font-mono text-[var(--text-secondary)]">
+                  {rankEmblemUrl && (
+                    <img
+                      src={rankEmblemUrl}
+                      alt={analysis.solo_tier}
+                      className="w-4 h-4"
+                    />
+                  )}
+                  <span className="text-[var(--neon-cyan)]">{getShortRank()}</span>
+                </span>
+              )}
               {/* Champion name */}
               {championName && (
                 <span className="text-sm text-[var(--neon-cyan)] font-mono truncate">
