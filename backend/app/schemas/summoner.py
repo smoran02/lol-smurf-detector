@@ -20,8 +20,8 @@ class SummonerData(BaseModel):
     """Response from Summoner API."""
 
     puuid: str
-    id: str  # Encrypted summoner ID (required for ranked lookups)
-    profile_icon_id: int = Field(alias="profileIconId")
+    id: str | None = None  # Encrypted summoner ID (may be missing in newer API responses)
+    profile_icon_id: int = Field(default=0, alias="profileIconId")
     summoner_level: int = Field(alias="summonerLevel")
     account_id: str | None = Field(default=None, alias="accountId")
 
