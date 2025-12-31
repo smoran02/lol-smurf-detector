@@ -58,7 +58,7 @@ export function LiveMatchCard({ analysis }: LiveMatchCardProps) {
       </div>
 
       {/* Teams grid */}
-      <div className="grid md:grid-cols-2 gap-8 md:gap-6">
+      <div className="grid md:grid-cols-2 gap-8 md:gap-6 items-start">
         {/* Blue Team */}
         <TeamSection
           team="blue"
