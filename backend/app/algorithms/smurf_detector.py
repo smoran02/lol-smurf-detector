@@ -29,12 +29,11 @@ class IndicatorScores:
     """Individual indicator scores (0-100)."""
 
     winrate: float | None = None
-    level_performance: float | None = None
+    account_age: float | None = None
     champion_pool: float | None = None
     cs_per_min: float | None = None
     kda: float | None = None
     game_frequency: float | None = None
-    account_age_ratio: float | None = None
 
 
 @dataclass
@@ -88,7 +87,7 @@ class SmurfDetector:
         # Calculate individual indicator scores
         indicator_scores = IndicatorScores(
             winrate=self._score_winrate(aggregate_stats.get("winrate")),
-            level_performance=self._score_level_performance(summoner_level, tier),
+            account_age=self._score_account_age(summoner_level, tier),
             champion_pool=self._score_champion_pool(
                 aggregate_stats.get("unique_champions", 0),
                 games,
@@ -100,12 +99,6 @@ class SmurfDetector:
             kda=self._score_kda(aggregate_stats.get("avg_kda"), tier),
             game_frequency=self._score_game_frequency(
                 aggregate_stats.get("games_per_day", 0)
-            ),
-            account_age_ratio=self._score_account_age_ratio(
-                summoner_level,
-                ranked_wins,
-                ranked_losses,
-                tier,
             ),
         )
 
@@ -152,7 +145,7 @@ class SmurfDetector:
         else:
             return 0
 
-    def _score_level_performance(
+    def _score_account_age(
         self,
         level: int,
         tier: str | None,
@@ -160,6 +153,8 @@ class SmurfDetector:
         """Score based on account level vs achieved rank.
 
         Low level accounts in high ranks are suspicious.
+        Level is used as a proxy for account age since it accumulates
+        over time across all game modes.
         """
         if not tier or tier not in EXPECTED_LEVEL_FOR_TIER:
             return 0
@@ -168,6 +163,7 @@ class SmurfDetector:
         level_ratio = level / expected_level
 
         # If level is much lower than expected for the rank
+        # Thresholds are aggressive to catch smurfs
         if level_ratio < 0.3:
             return 100
         elif level_ratio < 0.5:
@@ -281,55 +277,6 @@ class SmurfDetector:
         else:
             return 0
 
-    def _score_account_age_ratio(
-        self,
-        level: int,
-        wins: int | None,
-        losses: int | None,
-        tier: str | None,
-    ) -> float:
-        """Score based on how quickly account reached current rank.
-
-        Reaching high ranks with few total games is suspicious.
-        """
-        if wins is None or losses is None or not tier:
-            return 0
-
-        total_games = wins + losses
-        if total_games == 0:
-            return 0
-
-        # Expected games to reach each tier
-        expected_games = {
-            "IRON": 10,
-            "BRONZE": 30,
-            "SILVER": 80,
-            "GOLD": 150,
-            "PLATINUM": 250,
-            "EMERALD": 400,
-            "DIAMOND": 600,
-            "MASTER": 1000,
-            "GRANDMASTER": 1500,
-            "CHALLENGER": 2000,
-        }
-
-        expected = expected_games.get(tier, 100)
-        ratio = total_games / expected
-
-        # If total games is much lower than expected for the rank
-        if ratio < 0.2:
-            return 100
-        elif ratio < 0.3:
-            return 80
-        elif ratio < 0.4:
-            return 60
-        elif ratio < 0.5:
-            return 40
-        elif ratio < 0.7:
-            return 20
-        else:
-            return 0
-
     def _calculate_weighted_score(self, scores: IndicatorScores) -> float:
         """Calculate weighted average of all indicator scores."""
         total = 0
@@ -337,12 +284,11 @@ class SmurfDetector:
 
         score_map = {
             "winrate": scores.winrate,
-            "level_performance": scores.level_performance,
+            "account_age": scores.account_age,
             "champion_pool": scores.champion_pool,
             "cs_per_min": scores.cs_per_min,
             "kda": scores.kda,
             "game_frequency": scores.game_frequency,
-            "account_age_ratio": scores.account_age_ratio,
         }
 
         for indicator, score in score_map.items():

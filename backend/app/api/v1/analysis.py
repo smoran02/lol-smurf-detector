@@ -121,12 +121,11 @@ async def analyze_player_by_puuid(
         confidence=result.confidence,
         indicator_scores=IndicatorScores(
             winrate=result.indicator_scores.winrate,
-            level_performance=result.indicator_scores.level_performance,
+            account_age=result.indicator_scores.account_age,
             champion_pool=result.indicator_scores.champion_pool,
             cs_per_min=result.indicator_scores.cs_per_min,
             kda=result.indicator_scores.kda,
             game_frequency=result.indicator_scores.game_frequency,
-            account_age_ratio=result.indicator_scores.account_age_ratio,
         ),
         raw_metrics=RawMetrics(
             winrate=aggregate_stats.get("winrate"),

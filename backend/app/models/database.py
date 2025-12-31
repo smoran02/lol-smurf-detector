@@ -129,12 +129,11 @@ class SmurfAnalysis(Base):
 
     # Individual indicator scores (0-100)
     winrate_score = Column(Float)
-    level_performance_score = Column(Float)
+    account_age_score = Column(Float)
     champion_pool_score = Column(Float)
     cs_per_min_score = Column(Float)
     kda_score = Column(Float)
     game_frequency_score = Column(Float)
-    account_age_ratio_score = Column(Float)
 
     # Raw metrics used for scoring
     winrate = Column(Float)

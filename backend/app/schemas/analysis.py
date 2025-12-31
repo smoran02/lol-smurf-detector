@@ -30,12 +30,11 @@ class IndicatorScores(BaseModel):
     """Individual indicator scores (0-100)."""
 
     winrate: float | None = None
-    level_performance: float | None = None
+    account_age: float | None = None
     champion_pool: float | None = None
     cs_per_min: float | None = None
     kda: float | None = None
     game_frequency: float | None = None
-    account_age_ratio: float | None = None
 
 
 class RawMetrics(BaseModel):

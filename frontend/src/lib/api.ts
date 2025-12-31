@@ -25,12 +25,11 @@ export interface SummonerResponse {
 
 export interface IndicatorScores {
   winrate: number | null;
-  level_performance: number | null;
+  account_age: number | null;
   champion_pool: number | null;
   cs_per_min: number | null;
   kda: number | null;
   game_frequency: number | null;
-  account_age_ratio: number | null;
 }
 
 export interface RawMetrics {

@@ -15,28 +15,29 @@ TIER_BENCHMARKS: dict[str, dict[str, float]] = {
 }
 
 # Expected account levels for reaching each tier normally
+# These are intentionally high to catch smurfs - legitimate players
+# typically have much higher levels by the time they reach these ranks
 EXPECTED_LEVEL_FOR_TIER: dict[str, int] = {
     "IRON": 30,
-    "BRONZE": 40,
-    "SILVER": 60,
-    "GOLD": 80,
-    "PLATINUM": 100,
-    "EMERALD": 130,
-    "DIAMOND": 160,
-    "MASTER": 200,
-    "GRANDMASTER": 250,
-    "CHALLENGER": 300,
+    "BRONZE": 50,
+    "SILVER": 80,
+    "GOLD": 120,
+    "PLATINUM": 180,
+    "EMERALD": 250,
+    "DIAMOND": 350,
+    "MASTER": 500,
+    "GRANDMASTER": 600,
+    "CHALLENGER": 700,
 }
 
 # Indicator weights (must sum to 1.0)
 INDICATOR_WEIGHTS: dict[str, float] = {
-    "winrate": 0.20,
-    "level_performance": 0.20,
+    "winrate": 0.25,
+    "account_age": 0.25,  # Renamed from level_performance
     "champion_pool": 0.15,
     "cs_per_min": 0.15,
     "kda": 0.10,
     "game_frequency": 0.10,
-    "account_age_ratio": 0.10,
 }
 
 # Classification thresholds

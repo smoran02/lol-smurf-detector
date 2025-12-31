@@ -166,8 +166,8 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
                 score={analysis.indicator_scores.winrate}
               />
               <ScoreBar
-                label="Level vs Performance"
-                score={analysis.indicator_scores.level_performance}
+                label="Account Age"
+                score={analysis.indicator_scores.account_age}
               />
               <ScoreBar
                 label="Champion Pool"
@@ -184,10 +184,6 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
               <ScoreBar
                 label="Game Frequency"
                 score={analysis.indicator_scores.game_frequency}
-              />
-              <ScoreBar
-                label="Account Age"
-                score={analysis.indicator_scores.account_age_ratio}
               />
             </div>
           </div>

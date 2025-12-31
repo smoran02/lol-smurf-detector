@@ -102,8 +102,8 @@ class TestSmurfDetector:
             ranked_losses=20,
         )
 
-        # Low level for Diamond should trigger level_performance indicator
-        assert result.indicator_scores.level_performance > 60
+        # Low level for Diamond should trigger account_age indicator
+        assert result.indicator_scores.account_age > 60
         assert result.classification in [
             SmurfClassification.LIKELY_SMURF,
             SmurfClassification.POSSIBLE_SMURF,
@@ -269,16 +269,19 @@ class TestIndividualScorers:
         assert detector._score_winrate(57) == 30
         assert detector._score_winrate(50) == 0
 
-    def test_level_performance_scoring(self, detector):
-        """Test level vs performance scoring."""
-        # Level 30 in Diamond (expected 160) = ratio 0.19
-        assert detector._score_level_performance(30, "DIAMOND") == 100
+    def test_account_age_scoring(self, detector):
+        """Test account age (level vs rank) scoring."""
+        # Level 30 in Diamond (expected 350) = ratio 0.086 → 100
+        assert detector._score_account_age(30, "DIAMOND") == 100
 
-        # Level 80 in Gold (expected 80) = ratio 1.0
-        assert detector._score_level_performance(80, "GOLD") == 20
+        # Level 80 in Gold (expected 120) = ratio 0.67 → 60
+        assert detector._score_account_age(80, "GOLD") == 60
+
+        # Level 178 in Diamond (expected 350) = ratio 0.51 → 60 (between 0.5 and 0.7)
+        assert detector._score_account_age(178, "DIAMOND") == 60
 
         # Unknown tier
-        assert detector._score_level_performance(50, None) == 0
+        assert detector._score_account_age(50, None) == 0
 
     def test_game_frequency_scoring(self, detector):
         """Test game frequency scoring."""
