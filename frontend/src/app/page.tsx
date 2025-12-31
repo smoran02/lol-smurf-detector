@@ -63,7 +63,26 @@ export default function Home() {
           {/* Main title */}
           <div className="relative inline-block">
             <h1 className="font-display text-5xl md:text-7xl font-black text-neon-cyan glow-cyan animate-flicker tracking-wider">
-              SMURF DETECTOR
+              <span className="relative inline-block">
+                {/* Smurf hat on the S */}
+                <svg
+                  className="absolute -top-2 -left-2 md:-top-4 md:-left-4 w-8 h-8 md:w-12 md:h-12 transform -rotate-[30deg]"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                >
+                  {/* Classic smurf hat */}
+                  <path
+                    d="M6 24 Q6 14 16 10 Q18 4 24 6 Q28 10 26 16 Q24 22 18 24 Z"
+                    fill="white"
+                    stroke="#e0e0e0"
+                    strokeWidth="0.5"
+                  />
+                  <ellipse cx="16" cy="24" rx="12" ry="3" fill="white" stroke="#e0e0e0" strokeWidth="0.5"/>
+                  {/* Pom-pom at tip */}
+                  <circle cx="24" cy="6" r="3" fill="white" stroke="#e0e0e0" strokeWidth="0.5"/>
+                </svg>
+                S
+              </span>MURF DETECTOR
             </h1>
             <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--neon-cyan)] to-transparent opacity-50" />
           </div>
