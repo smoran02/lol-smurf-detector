@@ -88,8 +88,8 @@ export default function Home() {
           <SummonerSearch onSearch={handleSearch} isLoading={isLoading} />
         </section>
 
-        {/* Error Display */}
-        {error && (
+        {/* Error Display - don't show if summoner found but just not in game */}
+        {error && !(summoner && analysisError) && (
           <div className="animate-slide-up max-w-md mx-auto">
             <div className="glass-card p-5 border-[var(--neon-red)] box-glow-red">
               <div className="flex items-start gap-3">
