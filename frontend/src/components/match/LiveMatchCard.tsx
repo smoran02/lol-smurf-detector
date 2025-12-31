@@ -121,8 +121,8 @@ function TeamSection({ team, players, hiddenPlayers, label }: TeamSectionProps) 
 
   return (
     <div className="space-y-4">
-      {/* Team header */}
-      <div className={`flex items-center gap-3 ${isBlue ? "" : "md:flex-row-reverse"}`}>
+      {/* Team header - fixed height for alignment */}
+      <div className={`flex items-center gap-3 h-14 ${isBlue ? "" : "md:flex-row-reverse"}`}>
         <div
           className={`w-3 h-8 rounded-sm ${glowClass}`}
           style={{ backgroundColor: teamColor }}
