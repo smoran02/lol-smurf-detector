@@ -51,7 +51,7 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
       className={`
         glass-card glass-card-hover p-4 cursor-pointer
         border border-[var(--border-dim)] ${getBorderAccent()}
-        transition-all duration-300
+        transition-all duration-300 min-h-[106px]
         ${expanded ? "ring-1 ring-[var(--border-glow)]" : ""}
       `}
       onClick={() => setExpanded(!expanded)}

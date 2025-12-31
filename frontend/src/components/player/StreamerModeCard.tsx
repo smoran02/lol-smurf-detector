@@ -15,7 +15,7 @@ export function StreamerModeCard({ player }: StreamerModeCardProps) {
   return (
     <div
       className="
-        glass-card p-4
+        glass-card p-4 min-h-[106px]
         border border-[var(--border-dim)] border-dashed
         opacity-70
       "
