@@ -189,24 +189,19 @@ class SmurfDetector:
         """Score based on champion pool concentration.
 
         Smurfs often one-trick or play very few champions.
+        Uses absolute champion count since we only analyze ~5 games.
         """
         if games == 0:
             return 0
 
-        # Champion diversity ratio
-        diversity = unique_champions / games
-
-        # Very low diversity (1-2 champs in 20 games) is suspicious
-        if diversity < 0.1:
+        # Score based on absolute unique champion count
+        # With 5 games, playing 1-2 champs is suspicious
+        if unique_champions == 1:
             return 100
-        elif diversity < 0.15:
-            return 80
-        elif diversity < 0.2:
+        elif unique_champions == 2:
             return 60
-        elif diversity < 0.3:
-            return 40
-        elif diversity < 0.4:
-            return 20
+        elif unique_champions == 3:
+            return 30
         else:
             return 0
 

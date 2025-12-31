@@ -20,10 +20,9 @@ class SummonerData(BaseModel):
     """Response from Summoner API."""
 
     puuid: str
+    id: str  # Encrypted summoner ID (required for ranked lookups)
     profile_icon_id: int = Field(alias="profileIconId")
     summoner_level: int = Field(alias="summonerLevel")
-    # These fields are deprecated and no longer returned by Riot API
-    id: str | None = None
     account_id: str | None = Field(default=None, alias="accountId")
 
     class Config:

@@ -37,11 +37,11 @@ class TestSmurfDetector:
     def test_high_winrate_high_score(self, detector):
         """Test that high win rate contributes to high score."""
         stats = {
-            "games_analyzed": 20,
+            "games_analyzed": 5,
             "winrate": 75.0,
             "avg_kda": 2.5,
             "avg_cs_per_min": 6.0,
-            "unique_champions": 3,
+            "unique_champions": 1,  # One-trick = high champion pool score
             "games_per_day": 5,
         }
 
@@ -56,6 +56,7 @@ class TestSmurfDetector:
 
         # High winrate should give high score
         assert result.indicator_scores.winrate == 100
+        assert result.indicator_scores.champion_pool == 100
         assert result.total_score > 50
 
     def test_normal_player_low_score(self, detector):
