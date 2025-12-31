@@ -126,16 +126,16 @@ class RiotAPIClient:
         return SummonerData.model_validate(data)
 
     # League endpoints (Platform)
-    async def get_ranked_entries(self, summoner_id: str) -> list[RankedEntry]:
+    async def get_ranked_entries(self, puuid: str) -> list[RankedEntry]:
         """Get ranked entries for a summoner.
 
         Args:
-            summoner_id: Encrypted summoner ID
+            puuid: Player PUUID
 
         Returns:
             List of RankedEntry (solo/duo, flex, etc.)
         """
-        url = f"{settings.PLATFORM_HOST}/lol/league/v4/entries/by-summoner/{summoner_id}"
+        url = f"{settings.PLATFORM_HOST}/lol/league/v4/entries/by-puuid/{puuid}"
         data = await self._request("GET", url)
         return [RankedEntry.model_validate(entry) for entry in data]
 

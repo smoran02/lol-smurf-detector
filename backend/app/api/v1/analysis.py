@@ -75,23 +75,22 @@ async def analyze_player_by_puuid(
     except SummonerNotFound:
         raise HTTPException(status_code=404, detail="Summoner not found")
 
-    # Get ranked data (only if summoner ID is available)
+    # Get ranked data using PUUID
     solo_tier = None
     solo_rank = None
     solo_wins = None
     solo_losses = None
 
-    if summoner.id:
-        ranked_entries = await riot_api.get_ranked_entries(summoner.id)
+    ranked_entries = await riot_api.get_ranked_entries(puuid)
 
-        # Extract solo queue data
-        for entry in ranked_entries:
-            if entry.queue_type == "RANKED_SOLO_5x5":
-                solo_tier = entry.tier
-                solo_rank = entry.rank
-                solo_wins = entry.wins
-                solo_losses = entry.losses
-                break
+    # Extract solo queue data
+    for entry in ranked_entries:
+        if entry.queue_type == "RANKED_SOLO_5x5":
+            solo_tier = entry.tier
+            solo_rank = entry.rank
+            solo_wins = entry.wins
+            solo_losses = entry.losses
+            break
 
     # Fetch match history (limited to 5 to respect rate limits)
     matches = await match_service.get_recent_matches(puuid, count=5, queue_id=420)

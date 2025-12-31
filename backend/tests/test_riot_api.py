@@ -60,11 +60,11 @@ async def test_get_summoner_by_puuid_success(httpx_mock, riot_client, mock_summo
 async def test_get_ranked_entries_success(httpx_mock, riot_client, mock_ranked_entries):
     """Test successful ranked entries lookup."""
     httpx_mock.add_response(
-        url="https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/encrypted-summoner-id",
+        url="https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/test-puuid-123",
         json=mock_ranked_entries,
     )
 
-    result = await riot_client.get_ranked_entries("encrypted-summoner-id")
+    result = await riot_client.get_ranked_entries("test-puuid-123")
 
     assert len(result) == 2
     assert result[0].queue_type == "RANKED_SOLO_5x5"

@@ -29,30 +29,29 @@ async def get_summoner_by_riot_id(name: str, tag: str) -> SummonerResponse:
     # Get summoner details using PUUID
     summoner = await riot_api.get_summoner_by_puuid(account.puuid)
 
-    # Get ranked entries (only if summoner ID is available)
+    # Get ranked entries using PUUID
     solo_data = {}
     flex_data = {}
-    if summoner.id:
-        ranked_entries = await riot_api.get_ranked_entries(summoner.id)
+    ranked_entries = await riot_api.get_ranked_entries(account.puuid)
 
-        # Parse ranked data
-        for entry in ranked_entries:
-            if entry.queue_type == "RANKED_SOLO_5x5":
-                solo_data = {
-                    "solo_tier": entry.tier,
-                    "solo_rank": entry.rank,
-                    "solo_lp": entry.league_points,
-                    "solo_wins": entry.wins,
-                    "solo_losses": entry.losses,
-                }
-            elif entry.queue_type == "RANKED_FLEX_SR":
-                flex_data = {
-                    "flex_tier": entry.tier,
-                    "flex_rank": entry.rank,
-                    "flex_lp": entry.league_points,
-                    "flex_wins": entry.wins,
-                    "flex_losses": entry.losses,
-                }
+    # Parse ranked data
+    for entry in ranked_entries:
+        if entry.queue_type == "RANKED_SOLO_5x5":
+            solo_data = {
+                "solo_tier": entry.tier,
+                "solo_rank": entry.rank,
+                "solo_lp": entry.league_points,
+                "solo_wins": entry.wins,
+                "solo_losses": entry.losses,
+            }
+        elif entry.queue_type == "RANKED_FLEX_SR":
+            flex_data = {
+                "flex_tier": entry.tier,
+                "flex_rank": entry.rank,
+                "flex_lp": entry.league_points,
+                "flex_wins": entry.wins,
+                "flex_losses": entry.losses,
+            }
 
     return SummonerResponse(
         puuid=account.puuid,
