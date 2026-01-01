@@ -11,19 +11,21 @@ export default function Home() {
 
   const {
     data: summoner,
-    isLoading: summonerLoading,
+    isFetching: summonerFetching,
     error: summonerError,
+    refetch: refetchSummoner,
   } = useSummoner(riotId?.name ?? "", riotId?.tag ?? "", !!riotId);
 
   const {
     data: matchAnalysis,
-    isLoading: analysisLoading,
+    isFetching: analysisFetching,
     error: analysisError,
+    refetch: refetchAnalysis,
   } = useMatchAnalysis(summoner?.puuid ?? "", !!summoner?.puuid);
 
   // Only show cold start message if summoner lookup takes > 2 seconds
   useEffect(() => {
-    if (!summonerLoading) {
+    if (!summonerFetching) {
       return;
     }
     const timer = setTimeout(() => {
@@ -33,13 +35,21 @@ export default function Home() {
       clearTimeout(timer);
       setShowColdStartMessage(false);
     };
-  }, [summonerLoading]);
+  }, [summonerFetching]);
 
   const handleSearch = (name: string, tag: string) => {
-    setRiotId({ name, tag });
+    // If searching for the same player, refetch instead of just setting state
+    if (riotId?.name === name && riotId?.tag === tag) {
+      refetchSummoner();
+      if (summoner?.puuid) {
+        refetchAnalysis();
+      }
+    } else {
+      setRiotId({ name, tag });
+    }
   };
 
-  const isLoading = summonerLoading || analysisLoading;
+  const isLoading = summonerFetching || analysisFetching;
   const error = summonerError || analysisError;
 
   return (
@@ -129,7 +139,7 @@ export default function Home() {
         )}
 
         {/* Summoner Info (not in game) */}
-        {summoner && !matchAnalysis && !analysisLoading && (
+        {summoner && !matchAnalysis && !analysisFetching && (
           <div className="animate-slide-up max-w-md mx-auto">
             <div className="glass-card p-6 border-[var(--neon-orange)] box-glow-orange">
               <div className="text-center space-y-4">
@@ -172,7 +182,7 @@ export default function Home() {
         )}
 
         {/* Loading State - Summoner Lookup (only shows after 2s delay for cold starts) */}
-        {summonerLoading && showColdStartMessage && (
+        {summonerFetching && showColdStartMessage && (
           <div className="animate-slide-up text-center py-16">
             {/* Animated scanner */}
             <div className="relative inline-block mb-8">
@@ -212,7 +222,7 @@ export default function Home() {
         )}
 
         {/* Loading State - Match Analysis */}
-        {analysisLoading && (
+        {analysisFetching && (
           <div className="animate-slide-up text-center py-16">
             {/* Animated scanner */}
             <div className="relative inline-block mb-8">

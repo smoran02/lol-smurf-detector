@@ -425,3 +425,69 @@ body::after {
   background: var(--neon-cyan);
   color: var(--bg-void);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOOLTIPS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip-container .tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: all 0.15s ease-out;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.tooltip-container .tooltip-content {
+  position: relative;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  background:
+    linear-gradient(135deg, rgba(20, 20, 28, 0.98) 0%, rgba(12, 12, 18, 0.98) 100%);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 0 1px rgba(0, 245, 255, 0.15),
+    0 0 20px rgba(0, 245, 255, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+/* Subtle gradient border effect */
+.tooltip-container .tooltip-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 245, 255, 0.3) 0%,
+    rgba(0, 245, 255, 0.05) 50%,
+    rgba(255, 0, 170, 0.15) 100%
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.tooltip-container:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

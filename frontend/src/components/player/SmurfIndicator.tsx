@@ -125,9 +125,10 @@ interface ScoreBarProps {
   label: string;
   score: number | null;
   maxScore?: number;
+  tooltip?: string;
 }
 
-export function ScoreBar({ label, score, maxScore = 100 }: ScoreBarProps) {
+export function ScoreBar({ label, score, maxScore = 100, tooltip }: ScoreBarProps) {
   if (score === null) return null;
 
   const percentage = (score / maxScore) * 100;
@@ -144,8 +145,8 @@ export function ScoreBar({ label, score, maxScore = 100 }: ScoreBarProps) {
 
   const barConfig = getBarConfig();
 
-  return (
-    <div className="space-y-1.5">
+  const content = (
+    <>
       <div className="flex justify-between items-baseline">
         <span className="data-label">{label}</span>
         <span
@@ -174,6 +175,19 @@ export function ScoreBar({ label, score, maxScore = 100 }: ScoreBarProps) {
           }}
         />
       </div>
-    </div>
+    </>
   );
+
+  if (tooltip) {
+    return (
+      <div className="tooltip-container space-y-1.5">
+        <div className="tooltip">
+          <div className="tooltip-content">{tooltip}</div>
+        </div>
+        {content}
+      </div>
+    );
+  }
+
+  return <div className="space-y-1.5">{content}</div>;
 }
