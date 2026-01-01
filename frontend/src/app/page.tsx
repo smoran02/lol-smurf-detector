@@ -66,7 +66,7 @@ export default function Home() {
               <span className="relative inline-block">
                 {/* Smurf hat on the S */}
                 <svg
-                  className="absolute -top-2 -left-2 md:-top-4 md:-left-4 w-8 h-8 md:w-12 md:h-12 transform -rotate-[30deg]"
+                  className="absolute -top-3 -left-3 md:-top-4 md:-left-4 w-8 h-8 md:w-12 md:h-12 transform -rotate-[30deg]"
                   viewBox="0 0 32 32"
                   fill="none"
                 >
