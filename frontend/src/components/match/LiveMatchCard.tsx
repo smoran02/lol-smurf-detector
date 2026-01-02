@@ -236,7 +236,7 @@ function TeamThreatLevel({ team, players }: TeamThreatLevelProps) {
       : "var(--neon-green)";
 
   return (
-    <div className={`text-${isBlue ? "left" : "right"}`}>
+    <div className={isBlue ? "text-left" : "text-right"}>
       <div className="data-label mb-1" style={{ color: teamColor }}>
         {isBlue ? "BLUE" : "RED"} THREAT
       </div>
