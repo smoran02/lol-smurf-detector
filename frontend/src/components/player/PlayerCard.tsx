@@ -192,7 +192,7 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
               <ScoreBar
                 label="Win Rate"
                 score={analysis.indicator_scores.winrate}
-                tooltip="Win rates above 65% suggest the player is outclassing their opponents."
+                tooltip="Win rates above the normal range suggest the player is outclassing their opponents."
               />
               <ScoreBar
                 label="Account Age"
