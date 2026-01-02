@@ -145,10 +145,19 @@ export function ScoreBar({ label, score, maxScore = 100, tooltip }: ScoreBarProp
 
   const barConfig = getBarConfig();
 
-  const content = (
-    <>
+  return (
+    <div className="space-y-1.5">
       <div className="flex justify-between items-baseline">
-        <span className="data-label">{label}</span>
+        {tooltip ? (
+          <span className="tooltip-container">
+            <span className="tooltip">
+              <span className="tooltip-content">{tooltip}</span>
+            </span>
+            <span className="data-label cursor-help border-b border-dotted border-[var(--text-muted)]">{label}</span>
+          </span>
+        ) : (
+          <span className="data-label">{label}</span>
+        )}
         <span
           className="font-mono text-sm font-medium"
           style={{ color: barConfig.color }}
@@ -175,19 +184,6 @@ export function ScoreBar({ label, score, maxScore = 100, tooltip }: ScoreBarProp
           }}
         />
       </div>
-    </>
+    </div>
   );
-
-  if (tooltip) {
-    return (
-      <div className="tooltip-container space-y-1.5">
-        <div className="tooltip">
-          <div className="tooltip-content">{tooltip}</div>
-        </div>
-        {content}
-      </div>
-    );
-  }
-
-  return <div className="space-y-1.5">{content}</div>;
 }

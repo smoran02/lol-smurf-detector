@@ -192,32 +192,32 @@ export function PlayerCard({ analysis, championName }: PlayerCardProps) {
               <ScoreBar
                 label="Win Rate"
                 score={analysis.indicator_scores.winrate}
-                tooltip="Win rates above the normal range suggest the player is outclassing their opponents."
+                tooltip="Compares win rate to the average for their rank."
               />
               <ScoreBar
                 label="Account Age"
                 score={analysis.indicator_scores.account_age}
-                tooltip="Low level for their rank indicates rapid climbing on a fresh account."
+                tooltip="Account level relative to their current rank."
               />
               <ScoreBar
                 label="Champion Pool"
                 score={analysis.indicator_scores.champion_pool}
-                tooltip="Playing only 1-2 champions is common among smurfs."
+                tooltip="Number of unique champions played recently."
               />
               <ScoreBar
                 label="CS/min"
                 score={analysis.indicator_scores.cs_per_min}
-                tooltip="Creep score above their rank's average shows superior laning fundamentals."
+                tooltip="Creep score per minute compared to rank average."
               />
               <ScoreBar
                 label="KDA"
                 score={analysis.indicator_scores.kda}
-                tooltip="KDA far above their tier benchmark indicates skill beyond their current rank."
+                tooltip="Kill/Death/Assist ratio versus rank benchmark."
               />
               <ScoreBar
                 label="Game Frequency"
                 score={analysis.indicator_scores.game_frequency}
-                tooltip="Playing 6+ games per day on a new account signals a leveling grind."
+                tooltip="Average games played per day on this account."
               />
             </div>
           </div>
