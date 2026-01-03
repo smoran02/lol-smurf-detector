@@ -220,7 +220,7 @@ export default function Home() {
         )}
 
         {/* Match Analysis Results */}
-        {matchAnalysis && !analysisFetching && (
+        {matchAnalysis && !analysisFetching && isInGame && (
           <section>
             <LiveMatchCard analysis={matchAnalysis} />
           </section>
