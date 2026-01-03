@@ -143,8 +143,6 @@ function TeamSection({ team, players, hiddenPlayers, label }: TeamSectionProps) 
         {sortedDisplayPlayers.map((displayPlayer, index) => (
           <div
             key={displayPlayer.type === "analyzed" ? displayPlayer.data.puuid : `hidden-${displayPlayer.data.champion_id}-${index}`}
-            className="animate-slide-up"
-            style={{ animationDelay: `${index * 0.1}s`, opacity: 0 }}
           >
             {displayPlayer.type === "analyzed" ? (
               <PlayerCard

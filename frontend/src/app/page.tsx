@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { SummonerSearch } from "@/components/search/SummonerSearch";
 import { LiveMatchCard } from "@/components/match/LiveMatchCard";
-import { useSummoner, useMatchAnalysis } from "@/hooks/useSmurfAnalysis";
+import { LiveMatchCardSkeleton } from "@/components/match/LiveMatchCardSkeleton";
+import { useSummoner, useLiveGame, useMatchAnalysis } from "@/hooks/useSmurfAnalysis";
 
 export default function Home() {
   const [riotId, setRiotId] = useState<{ name: string; tag: string } | null>(null);
-  const [showColdStartMessage, setShowColdStartMessage] = useState(false);
+  const [showConnecting, setShowConnecting] = useState(false);
 
   const {
     data: summoner,
@@ -16,32 +17,28 @@ export default function Home() {
     refetch: refetchSummoner,
   } = useSummoner(riotId?.name ?? "", riotId?.tag ?? "", !!riotId);
 
+  // Check if player is in a live game (quick check)
+  const {
+    data: liveGame,
+    isFetching: liveGameFetching,
+    error: liveGameError,
+  } = useLiveGame(summoner?.puuid ?? "", !!summoner?.puuid);
+
+  // Only analyze match if player is in a game
+  const isInGame = !!liveGame && !liveGameError;
   const {
     data: matchAnalysis,
     isFetching: analysisFetching,
     error: analysisError,
     refetch: refetchAnalysis,
-  } = useMatchAnalysis(summoner?.puuid ?? "", !!summoner?.puuid);
-
-  // Only show cold start message if summoner lookup takes > 2 seconds
-  useEffect(() => {
-    if (!summonerFetching) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      setShowColdStartMessage(true);
-    }, 2000);
-    return () => {
-      clearTimeout(timer);
-      setShowColdStartMessage(false);
-    };
-  }, [summonerFetching]);
+  } = useMatchAnalysis(summoner?.puuid ?? "", isInGame);
 
   const handleSearch = (name: string, tag: string) => {
     // If searching for the same player, refetch instead of just setting state
     if (riotId?.name === name && riotId?.tag === tag) {
       refetchSummoner();
-      if (summoner?.puuid) {
+      // Only refetch analysis if player is actually in a game
+      if (isInGame) {
         refetchAnalysis();
       }
     } else {
@@ -49,8 +46,21 @@ export default function Home() {
     }
   };
 
-  const isLoading = summonerFetching || analysisFetching;
-  const error = summonerError || analysisError;
+  const isLoading = summonerFetching || liveGameFetching || analysisFetching;
+  const error = summonerError || analysisError; // liveGameError just means not in game, not an error
+
+  // Only show CONNECTING if summoner lookup + live game check takes > 500ms (cold start)
+  const isLookingUp = summonerFetching || liveGameFetching;
+  useEffect(() => {
+    if (!isLookingUp) {
+      setShowConnecting(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setShowConnecting(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isLookingUp]);
 
   return (
     <main className="min-h-screen py-16 px-4 relative">
@@ -139,7 +149,7 @@ export default function Home() {
         )}
 
         {/* Summoner Info (not in game) */}
-        {summoner && !matchAnalysis && !analysisFetching && (
+        {summoner && !liveGameFetching && !summonerFetching && !isInGame && (
           <div className="animate-slide-up max-w-md mx-auto">
             <div className="glass-card p-6 border-[var(--neon-orange)] box-glow-orange">
               <div className="text-center space-y-4">
@@ -181,89 +191,37 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading State - Summoner Lookup (only shows after 2s delay for cold starts) */}
-        {summonerFetching && showColdStartMessage && (
-          <div className="animate-slide-up text-center py-16">
-            {/* Animated scanner */}
-            <div className="relative inline-block mb-8">
-              <div className="w-24 h-24 border-2 border-[var(--neon-magenta)] rounded-full animate-glow-pulse" />
+        {/* Loading State - Spinner (only shows after 500ms for cold starts) */}
+        {showConnecting && (
+          <div className="text-center py-16">
+            <div className="relative inline-block mb-6">
+              <div className="w-20 h-20 border-2 rounded-full animate-glow-pulse border-[var(--neon-magenta)]" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 border-2 border-[var(--neon-cyan)] rounded-full animate-spin" style={{ animationDuration: '2s' }} />
+                <div className="w-14 h-14 border-2 rounded-full animate-spin border-[var(--neon-cyan)]" style={{ animationDuration: '2s' }} />
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-[var(--neon-magenta)] rounded-full animate-pulse opacity-50" />
+                <div className="w-5 h-5 rounded-full animate-pulse opacity-50 bg-[var(--neon-magenta)]" />
               </div>
             </div>
-
-            <h3 className="font-display text-xl text-neon-magenta glow-magenta mb-3">
+            <h3 className="font-display text-xl mb-2 text-neon-magenta glow-magenta">
               CONNECTING
             </h3>
-            <p className="text-[var(--text-secondary)] font-mono text-sm mb-2">
-              Looking up player...
-            </p>
-            <p className="text-[var(--text-muted)] text-xs font-mono">
+            <p className="text-[var(--text-secondary)] font-mono text-sm">
               First request may take ~30s if server is waking up
             </p>
-
-            {/* Progress dots */}
-            <div className="flex items-center justify-center gap-2 mt-6">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-[var(--neon-magenta)]"
-                  style={{
-                    animation: 'pulse-glow 1s ease-in-out infinite',
-                    animationDelay: `${i * 0.15}s`,
-                  }}
-                />
-              ))}
-            </div>
           </div>
         )}
 
-        {/* Loading State - Match Analysis */}
-        {analysisFetching && (
-          <div className="animate-slide-up text-center py-16">
-            {/* Animated scanner */}
-            <div className="relative inline-block mb-8">
-              <div className="w-24 h-24 border-2 border-[var(--neon-cyan)] rounded-full animate-glow-pulse" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 border-2 border-[var(--neon-magenta)] rounded-full animate-spin" style={{ animationDuration: '2s' }} />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-[var(--neon-cyan)] rounded-full animate-pulse opacity-50" />
-              </div>
-            </div>
-
-            <h3 className="font-display text-xl text-neon-cyan glow-cyan mb-3">
-              SCANNING MATCH
-            </h3>
-            <p className="text-[var(--text-secondary)] font-mono text-sm mb-2">
-              Analyzing all players in the current game...
-            </p>
-            <p className="text-[var(--text-muted)] text-xs font-mono">
-              This may take a moment as we gather match data
-            </p>
-
-            {/* Progress dots */}
-            <div className="flex items-center justify-center gap-2 mt-6">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-[var(--neon-cyan)]"
-                  style={{
-                    animation: 'pulse-glow 1s ease-in-out infinite',
-                    animationDelay: `${i * 0.15}s`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Loading State - Skeleton (only during match analysis when actually in game) */}
+        {analysisFetching && isInGame && !showConnecting && (
+          <section>
+            <LiveMatchCardSkeleton />
+          </section>
         )}
 
         {/* Match Analysis Results */}
-        {matchAnalysis && (
-          <section className="animate-slide-up stagger-2 opacity-0">
+        {matchAnalysis && !analysisFetching && (
+          <section>
             <LiveMatchCard analysis={matchAnalysis} />
           </section>
         )}
