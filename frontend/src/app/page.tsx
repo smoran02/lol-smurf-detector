@@ -21,11 +21,12 @@ export default function Home() {
   const {
     data: liveGame,
     isFetching: liveGameFetching,
-    error: liveGameError,
+    isNotInGame,
   } = useLiveGame(summoner?.puuid ?? "", !!summoner?.puuid);
 
   // Only analyze match if player is in a game
-  const isInGame = !!liveGame && !liveGameError;
+  // Use isNotInGame (404) instead of any error to prevent UI flicker on network hiccups
+  const isInGame = !!liveGame && !isNotInGame;
   const {
     data: matchAnalysis,
     isFetching: analysisFetching,
@@ -47,7 +48,7 @@ export default function Home() {
   };
 
   const isLoading = summonerFetching || liveGameFetching || analysisFetching;
-  const error = summonerError || analysisError; // liveGameError just means not in game, not an error
+  const error = summonerError || analysisError; // live game 404 just means not in game, not an error
 
   // Only show CONNECTING if summoner lookup + live game check takes > 500ms (cold start)
   const isLookingUp = summonerFetching || liveGameFetching;
